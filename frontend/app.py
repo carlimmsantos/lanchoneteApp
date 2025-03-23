@@ -52,13 +52,14 @@ def main(page: ft.Page):
         except requests.exceptions.RequestException as e:
             print(f"Erro ao cadastrar produto: {e}")
 
-    def cadastrar_mesa(e):
-        data = {
-            "numero": 1,
-            "status": False,
-        }
-        print(data)
-        response = requests.delete(f"http://127.0.0.1:8000/mesas/mesa/", json=data)
+    def apagar_produto(e):
+        
+        response = requests.delete(f"http://127.0.0.1:8000/produtos/produto/{13}")
+
+    def editar_produto(e):
+
+        response = requests.put(f"http://127.0.0.1:8000/")
+
 
     def filtrar(e):
         preenche_lista_produtos(produto_filtrar.value)
@@ -74,7 +75,9 @@ def main(page: ft.Page):
     )
     btn_produto = ft.ElevatedButton("Cadastrar Produto", on_click=cadastrar)
 
-    btn_mesa = ft.ElevatedButton("Cadastrar Mesa", on_click=cadastrar_mesa)
+    btn_del_prod = ft.ElevatedButton("Apagar Produto", on_click=apagar_produto)
+
+    btn_edit_prod = ft.ElevatedButton("Editar Produto", on_click=editar_produto)
 
 
     # Adicionando componentes à página
@@ -86,7 +89,8 @@ def main(page: ft.Page):
         txt_categoria,
         categoria,
         btn_produto,
-        btn_mesa,
+        btn_del_prod,
+        btn_edit_prod,
     )
 
     # Filtro de produtos

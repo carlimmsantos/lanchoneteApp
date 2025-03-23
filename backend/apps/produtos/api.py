@@ -49,12 +49,15 @@ def update_produto(request, id_produto: int, data: ProdutoSchema):
     produto.save()
     return produto
 
-@produtos_router.delete('/produto/{id_produto}', response={ 'success': bool })
+@produtos_router.delete('/produto/{id_produto}', response={ 200: dict})
 def delete_produto(request, id_produto: int):
-    produto = get_object_or_404(Produto, id=id_produto)
-    produto.delete()
-    return { 'success': True }
-
+    try:
+        produto = Produto.objects.get(id=id_produto)
+        produto.delete()
+        return JsonResponse({"message": "Produto deletado com sucesso!"})
+    except Produto.DoesNotExist:
+        return JsonResponse({"message": "Produto não encontrado!"})
+    
 @produtos_router.get('/categorias/', response=List[CategoriaSchema])
 def get_categoria(request):
     categoria = Categoria.objects.all()
