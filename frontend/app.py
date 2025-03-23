@@ -1,21 +1,37 @@
 import flet as ft
 import requests
-
-def get_categoria():
-    response = requests.get('http://127.0.0.1:8000/produtos/categorias/')
-    return response.json()
+from utils import get_categoria, get_id_categoria, get_produtos
 
 
 def main(page: ft.Page):
     page.title = 'Cadastro de Produtos' 
+    
 
     lista_produtos = ft.ListView()
 
+    def preenche_lista_produtos(nome=None):
+        
+        for i in get_produtos(nome):
+            lista_produtos.controls.append(
+                ft.Container(
+
+                    ft.Text(i['nome']),
+                    bgcolor= ft.colors.BLACK12,
+                    padding=15,
+                    alignment=ft.alignment.center,
+                    margin=3,
+                    border_radius=10,
+                    )
+            
+            )
+
+
     def cadatrar(e):
+
         data = {
             "nome": produto.value,
             "preco": preco.value,
-            "categoria_id": 1
+            "categoria_id": get_id_categoria(categoria.value)
         }
 
         response = requests.post('http://127.0.0.1:8000/produtos/produto/', json=data)
@@ -27,7 +43,7 @@ def main(page: ft.Page):
                     ft.Text(produto.value),
                     bgcolor= ft.colors.BLACK12,
                     padding=15,
-                    alignment=ft.Alignment.CENTER,
+                    alignment=ft.alignment.center,
                     margin=3,
                     border_radius=10,
                     )
@@ -35,6 +51,10 @@ def main(page: ft.Page):
             )
         page.update()
 
+    def filtrar(e):
+        lista_produtos.controls.clear()
+        preenche_lista_produtos(produto_filtrar.value)
+        page.update()
 
     txt_titulo = ft.Text('Titulo do Produto: ')
     produto = ft.TextField(label='Digite o titulo do produto..',)
@@ -62,11 +82,18 @@ def main(page: ft.Page):
         
         )
     
+    txt_produto_filtrar = ft.Text('Filtrar Produto: ')
+    produto_filtrar = ft.TextField(label='Digite o titulo do produto..',)
+    btn_filtrar = ft.IconButton(ft.icons.FILTER_ALT, on_click=filtrar)
+    preenche_lista_produtos()
     
-    
-    page.add(
-         
-         lista_produtos
+    page.add(  
+        txt_produto_filtrar,
+        ft.Row([
+            produto_filtrar,
+            btn_filtrar
+        ]),
+        lista_produtos,
          )
     
 
