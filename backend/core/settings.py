@@ -42,7 +42,6 @@ INSTALLED_APPS = [
     'apps.mesas',
 ]
 
-name = 'apps.produtos'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

@@ -4,8 +4,7 @@ from utils import get_categoria, get_id_categoria, get_produtos
 
 def main(page: ft.Page):
     page.title = "Cadastro de Produtos"
-    page.window_width = 800
-    page.window_height = 600
+    
 
     lista_produtos = ft.ListView()
 
@@ -53,6 +52,14 @@ def main(page: ft.Page):
         except requests.exceptions.RequestException as e:
             print(f"Erro ao cadastrar produto: {e}")
 
+    def cadastrar_mesa(e):
+        data = {
+            "numero": 1,
+            "status": False,
+        }
+        print(data)
+        response = requests.delete(f"http://127.0.0.1:8000/mesas/mesa/", json=data)
+
     def filtrar(e):
         preenche_lista_produtos(produto_filtrar.value)
 
@@ -67,6 +74,9 @@ def main(page: ft.Page):
     )
     btn_produto = ft.ElevatedButton("Cadastrar Produto", on_click=cadastrar)
 
+    btn_mesa = ft.ElevatedButton("Cadastrar Mesa", on_click=cadastrar_mesa)
+
+
     # Adicionando componentes à página
     page.add(
         txt_titulo,
@@ -76,12 +86,13 @@ def main(page: ft.Page):
         txt_categoria,
         categoria,
         btn_produto,
+        btn_mesa,
     )
 
     # Filtro de produtos
     txt_produto_filtrar = ft.Text("Filtrar Produto:")
     produto_filtrar = ft.TextField(label="Digite o título do produto...")
-    btn_filtrar = ft.IconButton(ft.icons.FILTER_ALT, on_click=filtrar)
+    btn_filtrar = ft.IconButton(ft.Icons.FILTER_ALT, on_click=filtrar)
 
     page.add(
         txt_produto_filtrar,

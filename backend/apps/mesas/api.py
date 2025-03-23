@@ -9,15 +9,14 @@ mesa_router = Router()
 class MesaSchema(ModelSchema):
     class Meta:
         model = Mesa
-        fields = ['numero', 'status', 'created_at', 'updated_at']
+        fields = ['numero', 'status',]
 
 @mesa_router.post('/mesa/', response=MesaSchema)
 def post_mesa(request, mesa: MesaSchema):
-    mesa = mesa(
+   
+    mesa = Mesa(
         numero=mesa.numero,
         status=mesa.status,
-        created_at=mesa.created_at,
-        updated_at=mesa.updated_at
     )
     
     mesa.save()
