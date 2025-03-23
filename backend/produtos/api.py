@@ -17,7 +17,7 @@ class CategoriaSchema(ModelSchema):
         model = Categoria
         fields = '__all__'
 
-@produtos_router.post('/produto/')
+@produtos_router.post('/produto/', response=ProdutoSchema)
 def post_produto(request, produto: ProdutoSchema):
     produto = Produto(
         nome=produto.nome,
@@ -25,8 +25,7 @@ def post_produto(request, produto: ProdutoSchema):
         categoria_id=produto.categoria
     )
     produto.save()
-
-    return 
+    return produto
 
 @produtos_router.get('/produto/', response=List[ProdutoSchema])
 def get_produto(request, nome: str = None):
@@ -37,11 +36,24 @@ def get_produto(request, nome: str = None):
 
     return produtos_list
 
-@produtos_router.delete('/produto/{id_produto}', response=ProdutoSchema)
+@produtos_router.get('/produto/{id_produto}', response=ProdutoSchema)
+def get_produto_by_id(request, id_produto: int):
+    produto = get_object_or_404(Produto, id=id_produto)
+    return produto
+
+@produtos_router.put('/produto/{id_produto}', response=ProdutoSchema)
+def update_produto(request, id_produto: int, data: ProdutoSchema):
+    produto = get_object_or_404(Produto, id=id_produto)
+    for attr, value in data.dict().items():
+        setattr(produto, attr, value)
+    produto.save()
+    return produto
+
+@produtos_router.delete('/produto/{id_produto}', response={ 'success': bool })
 def delete_produto(request, id_produto: int):
     produto = get_object_or_404(Produto, id=id_produto)
     produto.delete()
-    return produto
+    return { 'success': True }
 
 @produtos_router.get('/categorias/', response=List[CategoriaSchema])
 def get_categoria(request):
