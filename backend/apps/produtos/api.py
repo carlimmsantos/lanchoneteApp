@@ -10,7 +10,7 @@ produtos_router = Router()
 class ProdutoSchema(ModelSchema):
     class Meta:
         model = Produto
-        fields = '__all__'
+        fields = ['id', 'nome', 'preco', 'categoria']
 
 class CategoriaSchema(ModelSchema):
     class Meta:

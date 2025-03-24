@@ -9,43 +9,37 @@ mesa_router = Router()
 class MesaSchema(ModelSchema):
     class Meta:
         model = Mesa
-        fields = ['numero', 'status',]
+        fields = ['numero', 'status', "id_pedido"]
 
 @mesa_router.post('/mesa/', response=MesaSchema)
 def post_mesa(request, mesa: MesaSchema):
-   
     mesa = Mesa(
         numero=mesa.numero,
         status=mesa.status,
+        id_pedido=mesa.id_pedido
     )
-    
     mesa.save()
     return mesa
 
 @mesa_router.get('/mesa/', response=List[MesaSchema])
-def get_mesa(request, numero: int = None):
-    mesa_list = Mesa.objects.all()
+def get_mesas(request):
+    return Mesa.objects.all()
 
-    if numero:
-        mesa_list = mesa_list.filter(numero__icontains=numero)
+@mesa_router.get('/mesa/{id}/', response=MesaSchema)
+def get_mesa(request, id: int):
+    return get_object_or_404(Mesa, pk=id)
 
-    return mesa_list
-
-@mesa_router.get('/mesa/{id_mesa}', response=MesaSchema)
-def get_mesa_by_id(request, id_mesa: int):
-    mesa = get_object_or_404(Mesa, id=id_mesa)
-    return mesa
-
-@mesa_router.put('/mesa/{id_mesa}', response=MesaSchema)
-def update_mesa(request, id_mesa: int, data: MesaSchema):
-    mesa = get_object_or_404(Mesa, id=id_mesa)
-    for attr, value in data.dict().items():
-        setattr(mesa, attr, value)
+@mesa_router.put('/mesa/{id}/', response=MesaSchema)
+def put_mesa(request, id: int, mesa: MesaSchema):
+    mesa = get_object_or_404(Mesa, pk=id)
+    mesa.numero = mesa.numero
+    mesa.status = mesa.status
+    mesa.id_pedido = mesa.id_pedido
     mesa.save()
     return mesa
 
-@mesa_router.delete('/mesa/{id_mesa}', response={ 'success': bool })
-def delete_mesa(request, id_mesa: int):
-    mesa = get_object_or_404(Mesa, id=id_mesa)
+@mesa_router.delete('/mesa/{id}/')
+def delete_mesa(request, id: int):
+    mesa = get_object_or_404(Mesa, pk=id)
     mesa.delete()
-    return { 'success': True }
+    return {"message": "Mesa deleted successfully"}
