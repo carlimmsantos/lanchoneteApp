@@ -9,7 +9,7 @@ mesa_router = Router()
 class MesaSchema(ModelSchema):
     class Meta:
         model = Mesa
-        fields = ['id','numero', 'status', 'id_pedido']
+        fields = ['id','numero', 'status']
 
 @mesa_router.post('/mesa/', response=MesaSchema)
 def post_mesa(request, mesa: MesaSchema):
@@ -17,7 +17,7 @@ def post_mesa(request, mesa: MesaSchema):
         id=mesa.id,
         numero=mesa.numero,
         status=mesa.status,
-        id_pedido=mesa.id_pedido
+        
     )
     mesa.save()
     return mesa
@@ -35,7 +35,6 @@ def put_mesa(request, id: int, mesa: MesaSchema):
     mesa = get_object_or_404(Mesa, pk=id)
     mesa.numero = mesa.numero
     mesa.status = mesa.status
-    mesa.id_pedido = mesa.id_pedido
     mesa.save()
     return mesa
 

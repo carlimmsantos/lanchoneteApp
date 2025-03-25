@@ -1,5 +1,6 @@
 import flet as ft
-from utils import get_mesas, delete_mesa, create_mesa
+from utils.mesas import get_mesas, create_mesa, delete_mesa
+from utils.pedidos import create_pedido
 
 def main(page: ft.Page):
     # Configurações da página
@@ -125,7 +126,7 @@ def main(page: ft.Page):
                             ft.PopupMenuItem(
                                 text="Adicionar Pedido",
                                 icon=ft.Icons.ADD,
-                                on_click=lambda e, mesa_id=mesa['id']: print(f"Adicionar Pedido para Mesa {mesa_id}")
+                                on_click=lambda e, mesa_id=mesa['id']: create_pedido(1,mesa_id,1)
                             ),
                             
                         ]

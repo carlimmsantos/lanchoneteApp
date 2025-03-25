@@ -1,7 +1,10 @@
-# filepath: c:\Users\carlo\Documents\Programação\lanchoneteApp\frontend\utils.py
+
 import requests
 
 BASE_URL = "http://127.0.0.1:8000/mesas"
+
+
+# Funções para interagir com a API de mesas
 
 def create_mesa(numero):
     try:

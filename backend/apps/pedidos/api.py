@@ -4,23 +4,26 @@ from .models import Pedido
 from django.http import JsonResponse
 from typing import Optional, List
 from django.shortcuts import get_object_or_404
-
+from apps.mesas.models import Mesa
 
 pedidos_router = Router()
 
 class PedidoSchema(ModelSchema):
     class Meta:
         model = Pedido
-        fields = ['id', 'quantidade', 'id_produto']
+        fields = ['id', 'quantidade', 'mesa', 'id_produto']
+
 
 @pedidos_router.post('/pedido/', response=PedidoSchema)
 def post_pedido(request, pedido: PedidoSchema):
-    pedido = Pedido(
-        quantidade=pedido.quantidade,
-        id_produto_id=pedido.id_produto
+    
+    novo_pedido = Pedido(
+        quantidade=pedido.quantidade, 
+        mesa_id=pedido.mesa,
+        id_produto_id=pedido.id_produto  
     )
-    pedido.save()
-    return pedido
+    novo_pedido.save()
+    return novo_pedido
 
 
 @pedidos_router.get('/pedido/', response=List[PedidoSchema])
