@@ -2,11 +2,15 @@ import flet as ft
 from utils.mesas import get_mesas, create_mesa, delete_mesa
 from utils.pedidos import create_pedido
 
+class App(ft.Column):
+    def __init__(self):
+        super().__init__()
+
 def main(page: ft.Page):
     # Configurações da página
     page.title = "Restaurante Bom Sabor"
     page.window.width = 400
-    page.window.height = 800
+    page.window.height = 600
     page.window.fullscreen = False
     page.window.resizable = False
 
@@ -149,12 +153,46 @@ def main(page: ft.Page):
 
     # Lista de mesas
     mesa_list = ft.Column(
-        scroll=ft.ScrollMode.ALWAYS,
-        expand=True,
+        scroll=ft.ScrollMode.ALWAYS,  # Ativa o scroll
+        expand=True,  # Permite que o conteúdo ocupe o espaço disponível
         spacing=10,
     )
 
     atualizar_lista_mesas()
+
+    # Define the content column as part of the conteudo container
+    content = ft.Column()
+    
+    # Define the change_page function before using it
+    def change_page(event):
+        # Limpa o conteúdo atual da aba
+        conteudo.content.controls.clear()
+
+        # Verifica qual aba foi selecionada
+        if event.control.selected_index == 0:  # Aba "Mesas"
+            atualizar_lista_mesas()
+            conteudo.content.controls.append(
+                button_add_container
+            ),
+            
+            conteudo.content.controls.append(
+                ft.Container(
+                    content=mesa_list,  # Adiciona a lista de mesas com scroll
+                    expand=True,  # Expande para ocupar o espaço disponível
+                ),
+            )
+
+        elif event.control.selected_index == 1:  # Aba "Produtos"
+            conteudo.content.controls.append(
+                ft.Text("Produtos", size=18)
+            )
+        elif event.control.selected_index == 2:  # Aba "Administração"
+            conteudo.content.controls.append(
+                ft.Text("Administração", size=18)
+            )
+
+        # Atualiza a página para refletir as mudanças
+        page.update()
 
     # Barra de navegação
     nav_bar = ft.NavigationBar(
@@ -172,38 +210,49 @@ def main(page: ft.Page):
                 label="Gerenciamento",
             ),
         ],
+        on_change=change_page,  # Conecta a função change_page
     )
 
     # Criar uma camada por cima da imagem
     conteudo = ft.Container(
-        
         alignment=ft.alignment.top_center,
         content=ft.Column(
             controls=[
-                criar_header(),
-
                 button_add_container,
-
                 ft.Container(
-                    expand=True,  # Lista de mesas ocupa o espaço corretamente
-                    content=mesa_list,
-                    
+                    content=mesa_list,  # Adiciona a lista de mesas com scroll
+                    expand=True,  # Expande para ocupar o espaço disponível
                 ),
-
-                nav_bar,
             ],
             alignment=ft.MainAxisAlignment.START,
-            expand=True,  
+            expand=True,
         ),
+    )
+    
+
+    # Adicionar a barra de navegação fixa no rodapé
+    layout_principal = ft.Column(
+        controls=[
+            criar_header(),
+            ft.Container(
+                content=conteudo,
+                expand=True,
+            ),
+            nav_bar,  # Barra de navegação fixa no rodapé
+        ],
+        alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
+        expand=True,
     )
 
     # Usar um Stack para colocar a imagem no fundo e os elementos na frente
+    
+    app = App()
+    content.controls.append(app)  
+    
     page.add(ft.Stack([
-        fundo,
-        conteudo, 
-
-    ],
-    expand=True,
-    ))
+        fundo, 
+        #criar_header(), # Imagem de fundo
+        layout_principal,  # Layout principal com conteúdo e barra de navegação
+    ], expand=True))
 
 ft.app(target=main)
