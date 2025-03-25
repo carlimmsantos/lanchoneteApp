@@ -7,6 +7,7 @@ class Categoria(models.Model):
         return self.nome
 
 class Produto(models.Model):
+    id = models.AutoField(primary_key=True)
     nome = models.CharField(max_length=100)
     preco = models.FloatField()
     categoria = models.ForeignKey(Categoria, on_delete=models.DO_NOTHING)

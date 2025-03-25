@@ -3,7 +3,8 @@ import requests
 from utils import get_categoria, get_id_categoria, get_produtos
 
 def main(page: ft.Page):
-    page.title = "Cadastro de Produtos"
+   
+    page.title = "Lanchonte Bom Sabor"
     
 
     lista_produtos = ft.ListView()
@@ -119,7 +120,6 @@ def main(page: ft.Page):
             ),
         ]
     )
-    page.add(ft.Text("Body!"))
-
+    
 
 ft.app(target=main)

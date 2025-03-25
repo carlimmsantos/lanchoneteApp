@@ -2,6 +2,7 @@ from django.db import models
 
 
 class Mesa(models.Model):
+    id = models.AutoField(primary_key=True)
     numero = models.IntegerField()
     status = models.BooleanField(default=False)
     id_pedido = models.ForeignKey("pedidos.Pedido",
@@ -10,5 +11,4 @@ class Mesa(models.Model):
                                     blank=True)
 
     def __str__(self):
-        return f"Mesa {self.numero} - Status {self.status}"
-
+        return f"{self.id}"
