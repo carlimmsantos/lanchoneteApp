@@ -131,18 +131,55 @@ def main(page: ft.Page):
             atualizar_lista_mesas()  
 
 
-          #FUNÇÕES PRODUTOS
+#FUNÇÕES PRODUTOS
 
     # Função para adicionar um novo produto
     def adicionar_produto():
         numero_novo_produto = len(get_produtos()) + 1
         if create_produto("Pastel", 10.0):
             print(f"Produto {numero_novo_produto} criado com sucesso!")
+            atualizar_lista_produtos()
         else:
             print("Erro ao criar o produto.")
 
     def atualizar_lista_produtos():
-        pass
+        produto_list.controls.clear()
+        lista_produtos = get_produtos()
+        for produto in lista_produtos:
+            produto_component = ft.Container(
+                content=ft.ListTile(
+                    title=ft.Text(produto['nome'], size=16, weight=ft.FontWeight.BOLD, color='black'),
+                    subtitle=ft.Text(f"R$ {produto['preco']:.2f}", size=12, color="black"),
+                    trailing=ft.PopupMenuButton(
+                        key=produto['id'],
+                        icon=ft.Icons.MORE_VERT,
+                        items=[
+                            ft.PopupMenuItem(
+                                text="Editar",
+                                icon=ft.Icons.EDIT,
+                                on_click=lambda e: print("Editar")
+                            ),
+                            ft.PopupMenuItem(
+                                text="Excluir",
+                                icon=ft.Icons.DELETE,
+                                on_click=lambda e, produto_id=produto['id']: excluir_produto(produto_id)
+                            )
+                        ]
+                    )
+                ),
+                padding=10,
+                margin=5,
+                border_radius=10,
+                bgcolor="white",
+                border=ft.border.all(1, "black"),
+            )
+            produto_list.controls.append(produto_component)
+        page.update()
+
+
+    def excluir_produto(produto_id):
+        if delete_produto(produto_id):
+            atualizar_lista_produtos()
 
 
 
@@ -166,9 +203,17 @@ def main(page: ft.Page):
             )
 
         elif event.control.selected_index == 1: 
+            atualizar_lista_produtos()
             conteudo.content.controls.append(
                 button_add_produto_container,
-            )
+            ),
+            conteudo.content.controls.append(
+                ft.Container(
+                    content=produto_list,
+                    expand=True,
+                ),
+            ),
+        
         elif event.control.selected_index == 2: 
             conteudo.content.controls.append(
                 ft.Text("Administração", size=18)
@@ -222,7 +267,15 @@ def main(page: ft.Page):
         spacing=10,
     )
 
+    #Lista de produtos
+    produto_list = ft.Column(
+        scroll=ft.ScrollMode.ALWAYS,  
+        expand=True,
+        spacing=10,
+    )
+
     atualizar_lista_mesas()
+    atualizar_lista_produtos()
 
     content = ft.Column()
 
