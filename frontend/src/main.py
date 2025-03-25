@@ -1,5 +1,6 @@
 import flet as ft
 from utils.mesas import get_mesas, create_mesa, delete_mesa
+from utils.produtos import get_produtos, create_produto, delete_produto
 from utils.pedidos import create_pedido
 
 class App(ft.Column):
@@ -35,6 +36,7 @@ def main(page: ft.Page):
                     spacing=5)
             ], 
 
+
            
             alignment=ft.MainAxisAlignment.START),
             padding=10,
@@ -46,16 +48,7 @@ def main(page: ft.Page):
 
         )
    
-
-    # Criar um fundo com uma imagem
-    fundo = ft.Container(
-        width=400,
-        height=800,
-        content=ft.Image(
-            src="image/background.png",  # Substitua pelo caminho da sua imagem
-            fit=ft.ImageFit.COVER,  # Ajusta a imagem para cobrir toda a tela
-        )
-    )
+                #FUNÇÕES MESAS
 
     # Função para adicionar uma nova mesa
     def adicionar_mesa():
@@ -66,20 +59,6 @@ def main(page: ft.Page):
         else:
             print("Erro ao criar a mesa.")
 
-    # Botão para adicionar mesa
-    button_add = ft.ElevatedButton(
-        text="Adicionar Mesa",
-        bgcolor="green",
-        color="white",
-        on_click=lambda e: adicionar_mesa(),
-    )
-
-    button_add_container = ft.Row(
-        controls=[button_add],
-        alignment=ft.MainAxisAlignment.END,
-    )
-
-   
 
     # Função para atualizar a lista de mesas
     def atualizar_lista_mesas():
@@ -151,25 +130,29 @@ def main(page: ft.Page):
         if delete_mesa(mesa_id):  
             atualizar_lista_mesas()  
 
-    # Lista de mesas
-    mesa_list = ft.Column(
-        scroll=ft.ScrollMode.ALWAYS,  # Ativa o scroll
-        expand=True,  # Permite que o conteúdo ocupe o espaço disponível
-        spacing=10,
-    )
 
-    atualizar_lista_mesas()
+          #FUNÇÕES PRODUTOS
 
-    # Define the content column as part of the conteudo container
-    content = ft.Column()
-    
+    # Função para adicionar um novo produto
+    def adicionar_produto():
+        numero_novo_produto = len(get_produtos()) + 1
+        if create_produto("Pastel", 10.0):
+            print(f"Produto {numero_novo_produto} criado com sucesso!")
+        else:
+            print("Erro ao criar o produto.")
+
+    def atualizar_lista_produtos():
+        pass
+
+
+
     # Define the change_page function before using it
     def change_page(event):
         # Limpa o conteúdo atual da aba
         conteudo.content.controls.clear()
 
         # Verifica qual aba foi selecionada
-        if event.control.selected_index == 0:  # Aba "Mesas"
+        if event.control.selected_index == 0: 
             atualizar_lista_mesas()
             conteudo.content.controls.append(
                 button_add_container
@@ -177,22 +160,71 @@ def main(page: ft.Page):
             
             conteudo.content.controls.append(
                 ft.Container(
-                    content=mesa_list,  # Adiciona a lista de mesas com scroll
-                    expand=True,  # Expande para ocupar o espaço disponível
+                    content=mesa_list, 
+                    expand=True,
                 ),
             )
 
-        elif event.control.selected_index == 1:  # Aba "Produtos"
+        elif event.control.selected_index == 1: 
             conteudo.content.controls.append(
-                ft.Text("Produtos", size=18)
+                button_add_produto_container,
             )
-        elif event.control.selected_index == 2:  # Aba "Administração"
+        elif event.control.selected_index == 2: 
             conteudo.content.controls.append(
                 ft.Text("Administração", size=18)
             )
 
         # Atualiza a página para refletir as mudanças
         page.update()
+    
+    # Criar um fundo com uma imagem
+    fundo = ft.Container(
+        width=400,
+        height=800,
+        content=ft.Image(
+            src="image/background.png",  
+            fit=ft.ImageFit.COVER,  
+        )
+    )
+
+#Botão para adicionar produto
+    button_add_produto = ft.ElevatedButton(
+        text="Adicionar Produto",
+        bgcolor="green",
+        color="white",
+        on_click=lambda e: adicionar_produto(),
+    )
+
+    # Container para o botão de adicionar produto
+    button_add_produto_container = ft.Row(
+        controls=[button_add_produto],
+        alignment=ft.MainAxisAlignment.END,
+    )
+
+    # Botão para adicionar mesa
+    button_add = ft.ElevatedButton(
+        text="Adicionar Mesa",
+        bgcolor="green",
+        color="white",
+        on_click=lambda e: adicionar_mesa(),
+    )
+
+    # Container para o botão de adicionar mesa
+    button_add_container = ft.Row(
+        controls=[button_add],
+        alignment=ft.MainAxisAlignment.END,
+    ) 
+
+    # Lista de mesas
+    mesa_list = ft.Column(
+        scroll=ft.ScrollMode.ALWAYS,  
+        expand=True,
+        spacing=10,
+    )
+
+    atualizar_lista_mesas()
+
+    content = ft.Column()
 
     # Barra de navegação
     nav_bar = ft.NavigationBar(
@@ -210,7 +242,7 @@ def main(page: ft.Page):
                 label="Gerenciamento",
             ),
         ],
-        on_change=change_page,  # Conecta a função change_page
+        on_change=change_page, 
     )
 
     # Criar uma camada por cima da imagem
@@ -220,8 +252,8 @@ def main(page: ft.Page):
             controls=[
                 button_add_container,
                 ft.Container(
-                    content=mesa_list,  # Adiciona a lista de mesas com scroll
-                    expand=True,  # Expande para ocupar o espaço disponível
+                    content=mesa_list,
+                    expand=True, 
                 ),
             ],
             alignment=ft.MainAxisAlignment.START,
@@ -238,21 +270,20 @@ def main(page: ft.Page):
                 content=conteudo,
                 expand=True,
             ),
-            nav_bar,  # Barra de navegação fixa no rodapé
+            nav_bar,
         ],
         alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
         expand=True,
     )
 
-    # Usar um Stack para colocar a imagem no fundo e os elementos na frente
     
     app = App()
     content.controls.append(app)  
     
     page.add(ft.Stack([
         fundo, 
-        #criar_header(), # Imagem de fundo
-        layout_principal,  # Layout principal com conteúdo e barra de navegação
+        #criar_header(), 
+        layout_principal,
     ], expand=True))
 
 ft.app(target=main)

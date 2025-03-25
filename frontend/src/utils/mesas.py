@@ -32,3 +32,4 @@ def delete_mesa(mesa_id):
     except requests.exceptions.RequestException as e:
         print(f"Erro ao deletar mesa: {e}")
         return False
+    
