@@ -256,9 +256,10 @@ def main(page: ft.Page):
         except ValueError:
             print("Erro: O preço deve ser um número válido.")
 
-    # Função para lidar com o fechamento do BottomSheet
-    def handle_dismissal(e):
-        page.add(ft.Text("Bottom sheet dismissed"))
+  
+        
+       
+            
     
 
     # Criar um fundo com uma imagem
@@ -283,7 +284,6 @@ def main(page: ft.Page):
 
     # BottomSheet para adicionar produto
     bs = ft.BottomSheet(
-        on_dismiss=handle_dismissal,
         content=ft.Container(
             padding=50,
             content=ft.Column(
@@ -300,7 +300,6 @@ def main(page: ft.Page):
 
     # BottomSheet para editar produto
     bs_editar = ft.BottomSheet(
-        on_dismiss=handle_dismissal,
         content=ft.Container(
             padding=50,
             content=ft.Column(

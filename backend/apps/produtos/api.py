@@ -44,9 +44,11 @@ def get_produto_by_id(request, id_produto: int):
 @produtos_router.put('/produto/{id_produto}', response=ProdutoSchema)
 def update_produto(request, id_produto: int, data: ProdutoSchema):
     produto = get_object_or_404(Produto, id=id_produto)
+    categoria = Categoria.objects.get(id=data.categoria)
+
     produto.nome = data.nome
     produto.preco = data.preco
-    produto.categoria = data.categoria
+    produto.categoria = categoria
 
     produto.save()
     return produto
