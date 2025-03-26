@@ -29,3 +29,12 @@ def delete_produto(produto_id):
     except requests.exceptions.RequestException as e:
         print(f"Erro ao deletar produto: {e}")
         return False
+
+def update_produto(produto_id, nome, preco):
+    try:
+        response = requests.put(f"{BASE_URL}/produto/{produto_id}", json={"nome": nome, "preco": preco, "categoria": 1})
+        response.raise_for_status()
+        return response.json()
+    except requests.exceptions.RequestException as e:
+        print(f"Erro ao atualizar produto: {e}")
+        return None

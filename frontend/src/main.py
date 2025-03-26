@@ -1,6 +1,6 @@
 import flet as ft
 from utils.mesas import get_mesas, create_mesa, delete_mesa
-from utils.produtos import get_produtos, create_produto, delete_produto
+from utils.produtos import get_produtos, create_produto, delete_produto, update_produto
 from utils.pedidos import create_pedido
 
 class App(ft.Column):
@@ -30,7 +30,7 @@ def main(page: ft.Page):
 
                 ft.Column(
                     [
-                        ft.Text("FATURAMENTO DO DIA: R$ ", size=14, weight=ft.FontWeight.BOLD, color="black"),
+                        ft.Text("Usuario: Admin", size=14, weight=ft.FontWeight.BOLD, color="black"),
                         ft.Text(f"Mesas Disponíveis: {len(get_mesas())}", size=12, color="black"),
                     ], 
                     spacing=5)
@@ -48,7 +48,7 @@ def main(page: ft.Page):
 
         )
    
-                #FUNÇÕES MESAS
+    #FUNÇÕES MESAS
 
     # Função para adicionar uma nova mesa
     def adicionar_mesa():
@@ -129,9 +129,9 @@ def main(page: ft.Page):
         if delete_mesa(mesa_id):  
             atualizar_lista_mesas()  
 
-
     
     #FUNÇÕES PRODUTOS
+
 
     # Função para adicionar um novo produto
     def adicionar_produto(nome, preco):
@@ -161,7 +161,7 @@ def main(page: ft.Page):
                             ft.PopupMenuItem(
                                 text="Editar",
                                 icon=ft.Icons.EDIT,
-                                on_click=lambda e: print("Editar")
+                                on_click=lambda e, produto_id=produto['id']: abrir_editar_produto(produto_id)
                             ),
                             ft.PopupMenuItem(
                                 text="Excluir",
@@ -179,6 +179,23 @@ def main(page: ft.Page):
             )
             produto_list.controls.append(produto_component)
         page.update()
+
+    # Função para abrir o BottomSheet de edição de produto
+    def abrir_editar_produto(produto_id):
+        page.id_produto_atual = produto_id
+
+        produto = next((p for p in get_produtos() if p['id'] == produto_id), None)
+    
+        if produto:
+
+            nome_field.value = produto['nome']
+            preco_field.value = str(produto['preco'])
+            print(produto_id)
+            print(nome_field.value)
+            print(preco_field.value)
+            
+            page.open(bs_editar)
+            page.update()
 
     # Função para excluir um produto
     def excluir_produto(produto_id):
@@ -225,6 +242,21 @@ def main(page: ft.Page):
         # Atualiza a página para refletir as mudanças
         page.update()
     
+    # Função para atualizar a lista de produtos
+    def atualizar_produtos(nome, preco):
+        try:
+            preco = float(preco)  # Certifique-se de que o preço é um número
+            id_produto = page.id_produto_atual
+            print(id_produto)
+            if update_produto(id_produto, nome, preco):
+                print(f"Produto {nome} atualizado com sucesso!")
+                atualizar_lista_produtos()
+            else:
+                print("Erro ao atualizar o produto.")
+        except ValueError:
+            print("Erro: O preço deve ser um número válido.")
+
+    # Função para lidar com o fechamento do BottomSheet
     def handle_dismissal(e):
         page.add(ft.Text("Bottom sheet dismissed"))
     
@@ -238,6 +270,8 @@ def main(page: ft.Page):
             fit=ft.ImageFit.COVER,  
         )
     )
+
+    # Campos do formulário
     nome_field = ft.TextField(
         label="Nome do Produto",
         autofill_hints=ft.AutofillHint.NAME,
@@ -247,6 +281,7 @@ def main(page: ft.Page):
         keyboard_type=ft.KeyboardType.NUMBER,
     )
 
+    # BottomSheet para adicionar produto
     bs = ft.BottomSheet(
         on_dismiss=handle_dismissal,
         content=ft.Container(
@@ -258,6 +293,23 @@ def main(page: ft.Page):
                     preco_field,
                     ft.ElevatedButton("Cadastrar Produto",
                     on_click=lambda e: adicionar_produto(nome_field.value, preco_field.value)),
+                ],
+            ),
+        ),
+    )
+
+    # BottomSheet para editar produto
+    bs_editar = ft.BottomSheet(
+        on_dismiss=handle_dismissal,
+        content=ft.Container(
+            padding=50,
+            content=ft.Column(
+                tight=True,
+                controls=[
+                    nome_field,
+                    preco_field,
+                    ft.ElevatedButton("Atualizar Produto",
+                    on_click=lambda e: atualizar_produtos(nome_field.value, preco_field.value)),
                 ],
             ),
         ),
