@@ -108,7 +108,7 @@ def main(page: ft.Page):
                             ft.PopupMenuItem(
                                 text="Adicionar Pedido",
                                 icon=ft.Icons.ADD,
-                                on_click=lambda e, mesa_id=mesa['id']: create_pedido(1,mesa_id,11)
+                                on_click=lambda e, mesa_id=mesa['id']: adicionar_pedido(mesa_id)
                             ),
                             
                         ]
@@ -140,10 +140,12 @@ def main(page: ft.Page):
             if create_produto(nome, preco):
                 print(f"Produto {nome} criado com sucesso!")
                 atualizar_lista_produtos()
+                atualizar_dropdown_produtos()
 
                 nome_field.value = ""
                 preco_field.value = ""
                 page.update()
+                
             else:
                 print("Erro ao criar o produto.")
         except ValueError:
@@ -255,6 +257,7 @@ def main(page: ft.Page):
             if update_produto(id_produto, nome, preco):
                 print(f"Produto {nome} atualizado com sucesso!")
                 atualizar_lista_produtos()
+                atualizar_dropdown_produtos()
                 page.close(bs_editar)
 
             else:
@@ -262,10 +265,29 @@ def main(page: ft.Page):
         except ValueError:
             print("Erro: O preço deve ser um número válido.")
 
+    def buscar_id_produto_por_nome(nome_produto):
+        lista_produtos = get_produtos()
+        produto = next((p for p in lista_produtos if p['nome'] == nome_produto), None)
+        if produto:
+            return produto['id']
+        else:
+            print(f"Produto com nome '{nome_produto}' não encontrado.")
+            return None
   
-        
-       
-            
+    #FUNÇÕES PEDIDOS
+    
+    def adicionar_pedido(mesa_id):
+        page.open(bs_adicionar_pedido)
+        page.mesa_id = mesa_id
+        print(mesa_id)
+        page.update()
+   
+    def atualizar_dropdown_produtos():
+        lista_produtos = get_produtos()  # Busca os produtos atualizados
+        add_list_produto.options = [
+            ft.DropdownOption(lista_produtos[i]['nome']) for i in range(len(lista_produtos))
+        ]
+        page.update()  # Atualiza a página para refletir as mudanças
     
 
     # Criar um fundo com uma imagem
@@ -320,7 +342,42 @@ def main(page: ft.Page):
         ),
     )
 
-#Botão para adicionar produto
+    button_add_pedido = ft.ElevatedButton(
+        text="Adicionar no pedido", 
+
+        
+        on_click=lambda e: create_pedido(quantidade.value, page.mesa_id, buscar_id_produto_por_nome(add_list_produto.value)),)
+    
+
+    add_list_produto = ft.Dropdown(
+
+    width=200,
+    options=[
+        ft.DropdownOption(text=produto['nome']) for produto in get_produtos()
+    ],
+    
+    on_change=lambda e: print(f"Produto selecionado: ID={add_list_produto.value}"),
+    )
+
+    quantidade = ft.TextField(hint_text="Digite Quantidade:")
+
+    bs_adicionar_pedido = ft.BottomSheet(
+        content=ft.Container(
+            padding=50,
+            content=ft.Column(
+                tight=True,
+                controls=[
+                     quantidade,
+                    add_list_produto,
+                   button_add_pedido,
+                ],
+            ),
+        ),
+        
+    )
+
+
+    #Botão para adicionar produto
     button_add_produto = ft.ElevatedButton(
         text="Adicionar Produto",
         bgcolor="green",
@@ -361,7 +418,7 @@ def main(page: ft.Page):
         expand=True,
         spacing=10,
     )
-
+    atualizar_dropdown_produtos()
     atualizar_lista_mesas()
     atualizar_lista_produtos()
 
