@@ -140,6 +140,10 @@ def main(page: ft.Page):
             if create_produto(nome, preco):
                 print(f"Produto {nome} criado com sucesso!")
                 atualizar_lista_produtos()
+
+                nome_field.value = ""
+                preco_field.value = ""
+                page.update()
             else:
                 print("Erro ao criar o produto.")
         except ValueError:
@@ -251,6 +255,8 @@ def main(page: ft.Page):
             if update_produto(id_produto, nome, preco):
                 print(f"Produto {nome} atualizado com sucesso!")
                 atualizar_lista_produtos()
+                page.close(bs_editar)
+
             else:
                 print("Erro ao atualizar o produto.")
         except ValueError:
