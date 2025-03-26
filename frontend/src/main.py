@@ -11,7 +11,7 @@ def main(page: ft.Page):
     # Configurações da página
     page.title = "Restaurante Bom Sabor"
     page.window.width = 400
-    page.window.height = 600
+    page.window.height = 800
     page.window.fullscreen = False
     page.window.resizable = False
 
@@ -58,7 +58,6 @@ def main(page: ft.Page):
             print(f"Mesa {numero_nova_mesa} criada com sucesso!")
         else:
             print("Erro ao criar a mesa.")
-
 
     # Função para atualizar a lista de mesas
     def atualizar_lista_mesas():
@@ -131,17 +130,22 @@ def main(page: ft.Page):
             atualizar_lista_mesas()  
 
 
-#FUNÇÕES PRODUTOS
+    
+    #FUNÇÕES PRODUTOS
 
     # Função para adicionar um novo produto
-    def adicionar_produto():
-        numero_novo_produto = len(get_produtos()) + 1
-        if create_produto("Pastel", 10.0):
-            print(f"Produto {numero_novo_produto} criado com sucesso!")
-            atualizar_lista_produtos()
-        else:
-            print("Erro ao criar o produto.")
+    def adicionar_produto(nome, preco):
+        try:
+            preco = float(preco)  # Certifique-se de que o preço é um número
+            if create_produto(nome, preco):
+                print(f"Produto {nome} criado com sucesso!")
+                atualizar_lista_produtos()
+            else:
+                print("Erro ao criar o produto.")
+        except ValueError:
+            print("Erro: O preço deve ser um número válido.")
 
+    # Função para atualizar a lista de produtos
     def atualizar_lista_produtos():
         produto_list.controls.clear()
         lista_produtos = get_produtos()
@@ -176,14 +180,13 @@ def main(page: ft.Page):
             produto_list.controls.append(produto_component)
         page.update()
 
-
+    # Função para excluir um produto
     def excluir_produto(produto_id):
+        print(produto_id)
         if delete_produto(produto_id):
             atualizar_lista_produtos()
 
-
-
-    # Define the change_page function before using it
+    # Função para mudar de abas
     def change_page(event):
         # Limpa o conteúdo atual da aba
         conteudo.content.controls.clear()
@@ -216,12 +219,16 @@ def main(page: ft.Page):
         
         elif event.control.selected_index == 2: 
             conteudo.content.controls.append(
-                ft.Text("Administração", size=18)
+                ft.Text("Administração Em Desenvolvimento", size=16)
             )
 
         # Atualiza a página para refletir as mudanças
         page.update()
     
+    def handle_dismissal(e):
+        page.add(ft.Text("Bottom sheet dismissed"))
+    
+
     # Criar um fundo com uma imagem
     fundo = ft.Container(
         width=400,
@@ -231,13 +238,37 @@ def main(page: ft.Page):
             fit=ft.ImageFit.COVER,  
         )
     )
+    nome_field = ft.TextField(
+        label="Nome do Produto",
+        autofill_hints=ft.AutofillHint.NAME,
+    )
+    preco_field = ft.TextField(
+        label="Preço",
+        keyboard_type=ft.KeyboardType.NUMBER,
+    )
+
+    bs = ft.BottomSheet(
+        on_dismiss=handle_dismissal,
+        content=ft.Container(
+            padding=50,
+            content=ft.Column(
+                tight=True,
+                controls=[
+                    nome_field,
+                    preco_field,
+                    ft.ElevatedButton("Cadastrar Produto",
+                    on_click=lambda e: adicionar_produto(nome_field.value, preco_field.value)),
+                ],
+            ),
+        ),
+    )
 
 #Botão para adicionar produto
     button_add_produto = ft.ElevatedButton(
         text="Adicionar Produto",
         bgcolor="green",
         color="white",
-        on_click=lambda e: adicionar_produto(),
+        on_click=lambda e: page.open(bs),
     )
 
     # Container para o botão de adicionar produto
@@ -283,18 +314,20 @@ def main(page: ft.Page):
     nav_bar = ft.NavigationBar(
         destinations=[
             ft.NavigationBarDestination(
-                icon=ft.Icons.EXPLORE,
+                icon=ft.Icons.HOME,
                 label="Mesa",
             ),
             ft.NavigationBarDestination(
-                icon=ft.Icons.COMMUTE,
+                icon=ft.Icons.SHOP,
                 label="Produtos",
             ),
             ft.NavigationBarDestination(
                 icon=ft.Icons.BOOKMARK_BORDER,
                 label="Gerenciamento",
+                bgcolor="black",
             ),
         ],
+        bgcolor="white",
         on_change=change_page, 
     )
 
