@@ -108,7 +108,7 @@ def main(page: ft.Page):
                             ft.PopupMenuItem(
                                 text="Adicionar Pedido",
                                 icon=ft.Icons.ADD,
-                                on_click=lambda e, mesa_id=mesa['id']: create_pedido(1,mesa_id,1)
+                                on_click=lambda e, mesa_id=mesa['id']: create_pedido(1,mesa_id,11)
                             ),
                             
                         ]
