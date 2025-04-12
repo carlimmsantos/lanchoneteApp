@@ -2,10 +2,13 @@ import flet as ft
 from utils.mesas import get_mesas, create_mesa, delete_mesa
 from utils.produtos import get_produtos, create_produto, delete_produto, update_produto
 from utils.pedidos import create_pedido, get_pedidos_por_mesa
+from pages.conta import _view_ as v1
+
 
 class App(ft.Column):
     def __init__(self):
         super().__init__()
+
 
 def main(page: ft.Page):
     # Configurações da página
@@ -15,40 +18,84 @@ def main(page: ft.Page):
     page.window.fullscreen = False
     page.window.resizable = False
 
+    conta = v1()
+
     # Cabeçalho com logo e informações
     def criar_header():
         return ft.Container(
-            content=ft.Row([
-                
-                ft.Image(
-                    src="image/Icon.png",
-                    fit=ft.ImageFit.COVER,
-                    width=100,
-                    height=100,
-                    border_radius=5,
-                ),
-
-                ft.Column(
-                    [
-                        ft.Text("Usuario: Admin", size=14, weight=ft.FontWeight.BOLD, color="black"),
-                        ft.Text(f"Mesas Disponíveis: {len(get_mesas())}", size=12, color="black"),
-                    ], 
-                    spacing=5)
-            ], 
-
-
-           
-            alignment=ft.MainAxisAlignment.START),
+            content=ft.Row(
+                [
+                    ft.Image(
+                        src="image/Icon.png",
+                        fit=ft.ImageFit.COVER,
+                        width=100,
+                        height=100,
+                        border_radius=5,
+                    ),
+                    ft.Column(
+                        [
+                            ft.Text(
+                                "Usuario: Admin",
+                                size=14,
+                                weight=ft.FontWeight.BOLD,
+                                color="black",
+                            ),
+                            ft.Text(
+                                f"Mesas Disponíveis: {len(get_mesas())}",
+                                size=12,
+                                color="black",
+                            ),
+                        ],
+                        spacing=5,
+                    ),
+                ],
+                alignment=ft.MainAxisAlignment.START,
+            ),
             padding=10,
             border_radius=20,
-            bgcolor="white", 
+            bgcolor="white",
             width=400,
             border=ft.border.all(1, "black"),
             margin=5,
-
         )
-   
-    #FUNÇÕES MESAS
+
+    # Função para exibir pedidos de uma mesa
+    def exibir_pedidos(mesa_id):
+        pedidos = get_pedidos_por_mesa(mesa_id)
+        if pedidos:
+            pedidos_list = ft.Column(
+                controls=[
+                    ft.ListTile(
+                        title=ft.Text(f"Pedido {pedido['pedido_id']}"),
+                        subtitle=ft.Text(
+                            f"Produto: {pedido['produto_nome']} - Quantidade: {pedido['quantidade']}"
+                        ),
+                    )
+                    for pedido in pedidos
+                ],
+                spacing=10,
+            )
+        else:
+            pedidos_list = ft.Text(f"Nenhum pedido encontrado para a mesa {mesa_id}.")
+
+        # Atualiza a tela para exibir os pedidos
+        page.views.append(
+            ft.View(
+                "/pedidos",
+                controls=[
+                    ft.Text(
+                        f"Pedidos da Mesa {mesa_id}",
+                        size=20,
+                        weight=ft.FontWeight.BOLD,
+                    ),
+                    pedidos_list,
+                    ft.ElevatedButton(
+                        "Voltar", on_click=lambda e: page.go("/")
+                    ),
+                ],
+            )
+        )
+        page.update()
 
     # Função para adicionar uma nova mesa
     def adicionar_mesa():
@@ -66,59 +113,62 @@ def main(page: ft.Page):
         for mesa in lista_mesas:
             mesa_component = ft.Container(
                 content=ft.ListTile(
-
-                    #title=ft.Text(f"Mesa {mesa['numero']:02d}", size=16, weight=ft.FontWeight.BOLD, color='black'),
-                    #subtitle=ft.Text(f"Disponível: {mesa['status']}", size=12, color="black"),
-                    
                     title=ft.Row(
-                                controls=[
-                                    ft.Text(
-                                        f"Mesa {mesa['numero']:02d}",
-                                        size=16,
-                                        weight=ft.FontWeight.BOLD,
-                                        color="black"
-                                    ),
-                                    ft.Text(
-                                        f"{'Disponível' if mesa['status'] else 'Indisponivel'}",
-                                        size=16,
-                                        weight=ft.FontWeight.BOLD,
-                                        color="green" if mesa['status'] else "red"  
-                                    ),
-                                ],
-                                alignment=ft.MainAxisAlignment.START,
-                                spacing=20,
-                                height=60,
+                        controls=[
+                            ft.Text(
+                                f"Mesa {mesa['numero']:02d}",
+                                size=16,
+                                weight=ft.FontWeight.BOLD,
+                                color="black",
                             ),
-
-
+                            ft.Text(
+                                f"{'Disponível' if mesa['status'] else 'Indisponível'}",
+                                size=16,
+                                weight=ft.FontWeight.BOLD,
+                                color="green" if mesa['status'] else "red",
+                            ),
+                        ],
+                        alignment=ft.MainAxisAlignment.START,
+                        spacing=20,
+                        height=60,
+                    ),
                     trailing=ft.PopupMenuButton(
-                        key=mesa['id'],
+                        key=mesa["id"],
                         icon=ft.Icons.MORE_VERT,
                         items=[
                             ft.PopupMenuItem(
                                 text="Editar",
                                 icon=ft.Icons.EDIT,
-                                on_click=lambda e: print("Editar")
+                                on_click=lambda e: print("Editar"),
                             ),
                             ft.PopupMenuItem(
                                 text="Excluir",
                                 icon=ft.Icons.DELETE,
-                                on_click=lambda e, mesa_id=mesa['id']: excluir_mesa(mesa_id)
+                                on_click=lambda e, mesa_id=mesa["id"]: excluir_mesa(
+                                    mesa_id
+                                ),
                             ),
                             ft.PopupMenuItem(
                                 text="Adicionar Pedido",
                                 icon=ft.Icons.ADD,
-                                on_click=lambda e, mesa_id=mesa['id']: adicionar_pedido(mesa_id)
+                                on_click=lambda e, mesa_id=mesa["id"]: adicionar_pedido(
+                                    mesa_id
+                                ),
                             ),
-                            
-                        ]
-                     
-                    )
+                            ft.PopupMenuItem(
+                                text="Ver Pedidos",
+                                icon=ft.Icons.LIST,
+                                on_click=lambda e, mesa_id=mesa["id"]: exibir_pedidos(
+                                    mesa_id
+                                ),
+                            ),
+                        ],
+                    ),
                 ),
                 padding=10,
                 margin=5,
                 border_radius=10,
-                bgcolor= "white", 
+                bgcolor="white",
                 border=ft.border.all(1, "black"),
             )
             mesa_list.controls.append(mesa_component)
@@ -126,12 +176,8 @@ def main(page: ft.Page):
 
     # Função para excluir uma mesa
     def excluir_mesa(mesa_id):
-        if delete_mesa(mesa_id):  
-            atualizar_lista_mesas()  
-
-    
-    #FUNÇÕES PRODUTOS
-
+        if delete_mesa(mesa_id):
+            atualizar_lista_mesas()
 
     # Função para adicionar um novo produto
     def adicionar_produto(nome, preco):
@@ -276,21 +322,6 @@ def main(page: ft.Page):
   
     #FUNÇÕES PEDIDOS
     
-    def exibir_pedidos(mesa_id):
-        pedidos = get_pedidos_por_mesa(mesa_id)
-        if pedidos:
-            pedidos_list.controls.clear()
-            for pedido in pedidos:
-                pedidos_list.controls.append(
-                    ft.ListTile(
-                        title=ft.Text(f"Pedido {pedido['pedido_id']}"),
-                        subtitle=ft.Text(f"Produto: {pedido['produto_nome']} - Quantidade: {pedido['quantidade']}"),
-                    )
-                )
-            page.update()
-        else:
-            print(f"Nenhum pedido encontrado para a mesa {mesa_id}.")
-
     def adicionar_pedido(mesa_id):
         exibir_pedidos(mesa_id)
         page.open(bs_adicionar_pedido)
@@ -365,6 +396,7 @@ def main(page: ft.Page):
         on_click=lambda e: create_pedido(quantidade.value, page.mesa_id, buscar_id_produto_por_nome(add_list_produto.value)),)
     
 
+
     add_list_produto = ft.Dropdown(
 
     width=200,
@@ -395,13 +427,15 @@ def main(page: ft.Page):
                     quantidade,
                     add_list_produto,
                     button_add_pedido,
+                    
                 ],
             ),
         ),
         
     )
 
-    print(exibir_pedidos(1))
+    
+
 
 
     #Botão para adicionar produto
@@ -515,8 +549,8 @@ def main(page: ft.Page):
 
 ft.app(target=main)
 
-if __name__ == "__main__":
+"""if __name__ == "__main__":
     # Teste simples para verificar a função get_pedidos_por_mesa
     mesa_id_teste = 1  # Substitua pelo ID de uma mesa existente no banco
     pedidos = get_pedidos_por_mesa(mesa_id_teste)
-    print(f"Pedidos para a mesa {mesa_id_teste}: {pedidos}")
+    print(f"Pedidos para a mesa {mesa_id_teste}: {pedidos}")"""
