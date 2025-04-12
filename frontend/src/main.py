@@ -2,7 +2,7 @@ import flet as ft
 from utils.mesas import get_mesas, create_mesa, delete_mesa
 from utils.produtos import get_produtos, create_produto, delete_produto, update_produto
 from utils.pedidos import create_pedido, get_pedidos_por_mesa
-from pages.conta import _view_ as v1
+
 
 
 class App(ft.Column):
@@ -18,9 +18,9 @@ def main(page: ft.Page):
     page.window.fullscreen = False
     page.window.resizable = False
 
-    conta = v1()
+    # Função para criar o cabeçalho
 
-    # Cabeçalho com logo e informações
+
     def criar_header():
         return ft.Container(
             content=ft.Row(
@@ -78,7 +78,7 @@ def main(page: ft.Page):
         else:
             pedidos_list = ft.Text(f"Nenhum pedido encontrado para a mesa {mesa_id}.")
 
-        # Atualiza a tela para exibir os pedidos
+
         page.views.append(
             ft.View(
                 "/pedidos",
@@ -90,12 +90,19 @@ def main(page: ft.Page):
                     ),
                     pedidos_list,
                     ft.ElevatedButton(
-                        "Voltar", on_click=lambda e: page.go("/")
+                        "Voltar", on_click=lambda e: voltar()
                     ),
                 ],
             )
         )
         page.update()
+
+    def voltar():
+        if page.views:
+            page.views.pop()
+            page.update()
+
+
 
     # Função para adicionar uma nova mesa
     def adicionar_mesa():
@@ -197,7 +204,7 @@ def main(page: ft.Page):
         except ValueError:
             print("Erro: O preço deve ser um número válido.")
 
-    # Função para atualizar a lista de produtos
+
     def atualizar_lista_produtos():
         produto_list.controls.clear()
         lista_produtos = get_produtos()
@@ -328,7 +335,7 @@ def main(page: ft.Page):
         page.mesa_id = mesa_id
         print(mesa_id)
         page.update()
-   
+        
     def atualizar_dropdown_produtos():
         lista_produtos = get_produtos()  # Busca os produtos atualizados
         add_list_produto.options = [
