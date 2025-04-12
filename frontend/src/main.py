@@ -1,7 +1,7 @@
 import flet as ft
 from utils.mesas import get_mesas, create_mesa, delete_mesa
 from utils.produtos import get_produtos, create_produto, delete_produto, update_produto
-from utils.pedidos import create_pedido
+from utils.pedidos import create_pedido, get_pedidos_por_mesa
 
 class App(ft.Column):
     def __init__(self):
@@ -276,7 +276,23 @@ def main(page: ft.Page):
   
     #FUNÇÕES PEDIDOS
     
+    def exibir_pedidos(mesa_id):
+        pedidos = get_pedidos_por_mesa(mesa_id)
+        if pedidos:
+            pedidos_list.controls.clear()
+            for pedido in pedidos:
+                pedidos_list.controls.append(
+                    ft.ListTile(
+                        title=ft.Text(f"Pedido {pedido['pedido_id']}"),
+                        subtitle=ft.Text(f"Produto: {pedido['produto_nome']} - Quantidade: {pedido['quantidade']}"),
+                    )
+                )
+            page.update()
+        else:
+            print(f"Nenhum pedido encontrado para a mesa {mesa_id}.")
+
     def adicionar_pedido(mesa_id):
+        exibir_pedidos(mesa_id)
         page.open(bs_adicionar_pedido)
         page.mesa_id = mesa_id
         print(mesa_id)
@@ -361,20 +377,31 @@ def main(page: ft.Page):
 
     quantidade = ft.TextField(hint_text="Digite Quantidade:")
 
+    # Lista de pedidos
+    pedidos_list = ft.Column(
+        scroll=ft.ScrollMode.ALWAYS,
+        expand=True,
+        spacing=10,
+    )
+
+    # Atualize o BottomSheet para exibir os pedidos
     bs_adicionar_pedido = ft.BottomSheet(
         content=ft.Container(
             padding=50,
             content=ft.Column(
                 tight=True,
                 controls=[
-                     quantidade,
+                    pedidos_list,
+                    quantidade,
                     add_list_produto,
-                   button_add_pedido,
+                    button_add_pedido,
                 ],
             ),
         ),
         
     )
+
+    print(exibir_pedidos(1))
 
 
     #Botão para adicionar produto
@@ -487,3 +514,9 @@ def main(page: ft.Page):
     ], expand=True))
 
 ft.app(target=main)
+
+if __name__ == "__main__":
+    # Teste simples para verificar a função get_pedidos_por_mesa
+    mesa_id_teste = 1  # Substitua pelo ID de uma mesa existente no banco
+    pedidos = get_pedidos_por_mesa(mesa_id_teste)
+    print(f"Pedidos para a mesa {mesa_id_teste}: {pedidos}")
