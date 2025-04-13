@@ -391,17 +391,23 @@ def main(page: ft.Page):
                 ),
             )
 
-        elif event.control.selected_index == 1: 
-            atualizar_lista_produtos()
+        elif event.control.selected_index == 1:  # Aba "Produtos"
+            atualizar_lista_produtos()  # Atualiza a lista de produtos
+            conteudo.content.controls.append(
+                campo_busca_produto_container,  # Adiciona o campo de busca por nome
+            )
+            conteudo.content.controls.append(
+                campo_busca_preco_container,  # Adiciona o campo de busca por preço
+            )
             conteudo.content.controls.append(
                 button_add_produto_container,
-            ),
+            )
             conteudo.content.controls.append(
                 ft.Container(
                     content=produto_list,
                     expand=True,
                 ),
-            ),
+            )
         
         elif event.control.selected_index == 2: 
             conteudo.content.controls.append(
