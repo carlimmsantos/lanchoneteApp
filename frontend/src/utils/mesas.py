@@ -1,5 +1,6 @@
 
 import requests
+import psycopg2
 
 BASE_URL = "http://127.0.0.1:8000/mesas"
 
@@ -33,3 +34,38 @@ def delete_mesa(mesa_id):
         print(f"Erro ao deletar mesa: {e}")
         return False
     
+
+
+def alterar_mesa_status(mesa_id):
+    try:
+        
+        conn = psycopg2.connect(
+            dbname="Gerencia",
+            user="postgres",
+            password="santos2018",  
+            host="localhost",
+            port="5432"
+        )
+        
+        cursor = conn.cursor()
+
+
+        cursor.execute("CALL alterar_mesa_status(%s);", (mesa_id,))
+
+        
+        conn.commit()
+
+        print(f"Status da mesa {mesa_id} atualizado com sucesso.")
+        return True
+
+    except psycopg2.Error as e:
+        
+        print(f"Erro ao alterar o status da mesa {mesa_id}: {e}")
+        return False
+
+    finally:
+        
+        if 'cursor' in locals():
+            cursor.close()
+        if 'conn' in locals():
+            conn.close()   

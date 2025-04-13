@@ -1,7 +1,7 @@
 import flet as ft
-from utils.mesas import get_mesas, create_mesa, delete_mesa
+from utils.mesas import get_mesas, create_mesa, delete_mesa, alterar_mesa_status
 from utils.produtos import get_produtos, create_produto, delete_produto, update_produto
-from utils.pedidos import create_pedido, get_pedidos_por_mesa
+from utils.pedidos import create_pedido, get_pedidos_por_mesa, apagar_pedidos_mesa
 
 
 
@@ -124,6 +124,8 @@ def main(page: ft.Page):
             on_click=lambda e: pagamento_pedido(mesa_id),
         )
 
+        
+
        
         head_pedidos = ft.Container(
             content=ft.Row(
@@ -199,6 +201,8 @@ def main(page: ft.Page):
                 ],
             )
         )
+        page.overlay.append(bs_pagamento)
+
         page.update()
 
     def voltar():
@@ -424,6 +428,7 @@ def main(page: ft.Page):
         except ValueError:
             print("Erro: O preço deve ser um número válido.")
 
+    # Função para buscar o ID do produto pelo nome
     def buscar_id_produto_por_nome(nome_produto):
         lista_produtos = get_produtos()
         produto = next((p for p in lista_produtos if p['nome'] == nome_produto), None)
@@ -438,11 +443,12 @@ def main(page: ft.Page):
     def adicionar_pedido(mesa_id):
         page.open(bs_adicionar_pedido)
         page.mesa_id = mesa_id
-        print(mesa_id)
         page.update()
+        alterar_mesa_status(mesa_id)
+        atualizar_lista_mesas()
         
     def atualizar_dropdown_produtos():
-        lista_produtos = get_produtos()  # Busca os produtos atualizados
+        lista_produtos = get_produtos()  
         add_list_produto.options = [
             ft.DropdownOption(lista_produtos[i]['nome']) for i in range(len(lista_produtos))
         ]
@@ -450,7 +456,11 @@ def main(page: ft.Page):
     
     def pagamento_pedido(mesa_id):
         page.mesa_id_pagamento = mesa_id
+
+        print(f"Estou na {mesa_id}")
+
         page.open(bs_pagamento)
+
         page.update()
         
     
@@ -541,6 +551,17 @@ def main(page: ft.Page):
             ft.dropdown.Option("Cartão de Débito"),
             ft.dropdown.Option("Dinheiro"),
             ft.dropdown.Option("Vale Refeição"),
+            ft.dropdown.Option("Berries"),
+        ],
+    )
+
+
+    add_list_desconto = ft.Dropdown(
+        width=200,  
+        options=[
+            ft.dropdown.Option("Flamengo"),
+            ft.dropdown.Option("One Piece"),
+            ft.dropdown.Option("Sousa"),
         ],
     )
 
@@ -552,20 +573,23 @@ def main(page: ft.Page):
                 controls=[
                     ft.Text("Selecione o método de pagamento"),
                     add_list_pagamento,
+                    ft.Text("Selecione o desconto"),
+                    add_list_desconto,
                     ft.ElevatedButton(
                         "Fechar Pedido",
                         bgcolor="green", 
                         color="white", 
-                        on_click=lambda e: fechar_pedido(add_list_pagamento.value),
+                        on_click=lambda e: fechar_pedido(add_list_pagamento.value, page.mesa_id_pagamento),
             )],
             ),
         ),
     )
 
-    def fechar_pedido(metodo_pagamento):
-        mesa_id = page.mesa_id_pagamento
+    def fechar_pedido(metodo_pagamento, mesa_id):
         print(f"Pedido fechado para a mesa {mesa_id} com método de pagamento: {metodo_pagamento}")
-
+        
+        apagar_pedidos_mesa(mesa_id)  
+        atualizar_lista_mesas()
         page.close(bs_pagamento)
         voltar()
 
@@ -692,7 +716,8 @@ def main(page: ft.Page):
 
     
     app = App()
-    content.controls.append(app)  
+    content.controls.append(app) 
+    
     
     page.add(ft.Stack([
         fundo, 
