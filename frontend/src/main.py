@@ -19,8 +19,6 @@ def main(page: ft.Page):
     page.window.resizable = False
 
     # Função para criar o cabeçalho
-
-
     def criar_header():
         return ft.Container(
             content=ft.Row(
@@ -62,36 +60,133 @@ def main(page: ft.Page):
     # Função para exibir pedidos de uma mesa
     def exibir_pedidos(mesa_id):
         pedidos = get_pedidos_por_mesa(mesa_id)
+
+        pedidos_list.controls.clear()
+
+        lista_produto = get_produtos() 
+
+        valor_total = 0.0
+
         if pedidos:
-            pedidos_list = ft.Column(
-                controls=[
-                    ft.ListTile(
-                        title=ft.Text(f"Pedido {pedido['pedido_id']}"),
-                        subtitle=ft.Text(
-                            f"Produto: {pedido['produto_nome']} - Quantidade: {pedido['quantidade']}"
-                        ),
+            for pedido in pedidos:
+                
+                produto = next((p for p in lista_produto if pedido["produto_nome"] == p['nome']), None)
+                
+                if produto:
+                    valor_total += pedido['quantidade'] * produto['preco']
+                    
+                    pedidos_list.controls.append(
+                        ft.Container(
+                            content=ft.ListTile(
+                                title=ft.Text(f"Pedido {pedido['pedido_id']}"),
+                                subtitle=ft.Text(
+                                    f"{pedido['quantidade']} X {produto['nome']} = R$ {pedido['quantidade'] * produto['preco']:.2f}",
+                                    size=12, color="black"
+                                ),
+                            ),
+                            bgcolor="white",
+                            padding=10,
+                            margin=5,
+                            border_radius=10,
+                            border=ft.border.all(1, "black"),
+                        )
                     )
-                    for pedido in pedidos
-                ],
-                spacing=10,
-            )
+                else:
+                    pedidos_list.controls.append(
+                        ft.Text(f"Produto com ID {pedido.get('produto_id')} não encontrado.")
+                    )
+
+
+
+
         else:
-            pedidos_list = ft.Text(f"Nenhum pedido encontrado para a mesa {mesa_id}.")
+            pedidos_list.controls.append(
+                ft.Text(f"Nenhum pedido encontrado para a mesa {mesa_id}.")
+            )
 
+        page.update()
 
-        page.views.append(
-            ft.View(
-                "/pedidos",
-                controls=[
-                    ft.Text(
-                        f"Pedidos da Mesa {mesa_id}",
-                        size=20,
-                        weight=ft.FontWeight.BOLD,
+      
+        fundo_pedidos = ft.Container(
+            width=400,
+            height=800,
+            content=ft.Image(
+                src="image/background.png",
+                fit=ft.ImageFit.COVER,
+            ),
+        )
+
+       
+        head_pedidos = ft.Container(
+            content=ft.Row(
+                [
+                    ft.Image(
+                        src="image/Icon.png",
+                        fit=ft.ImageFit.COVER,
+                        width=100,
+                        height=100,
+                        border_radius=5,
                     ),
+                    ft.Column(
+                        [
+                            ft.Text(
+                                f"Mesa {mesa_id}",
+                                size=21,
+                                weight=ft.FontWeight.BOLD,
+                                color="black",
+                            ),
+                            ft.Text(
+                                f"Valor Total: R$ {valor_total:.2f}",
+                                size=16,
+                                weight=ft.FontWeight.BOLD,
+                                color="black",
+                            ),
+
+
+                        ],
+                        spacing=10,
+
+                    ),
+                ],
+                alignment=ft.MainAxisAlignment.START,
+            ),
+            padding=10,
+            border_radius=20,
+            bgcolor="white",
+            width=400,
+            border=ft.border.all(1, "black"),
+            margin=5,
+        )
+
+        # Camada de pedidos
+        camada_pedidos = ft.Container(
+            alignment=ft.alignment.top_center,
+            content=ft.Column(
+                controls=[
+                    head_pedidos,
                     pedidos_list,
                     ft.ElevatedButton(
                         "Voltar", on_click=lambda e: voltar()
                     ),
+                ],
+                alignment=ft.MainAxisAlignment.START,
+                spacing=20,
+            ),
+            padding=20,
+        )
+
+        # Adiciona o plano de fundo e a camada ao Stack
+        page.views.append(
+            ft.View(
+                "/pedidos",
+                controls=[
+                    ft.Stack(
+                        controls=[
+                            fundo_pedidos,  # Plano de fundo
+                            camada_pedidos,  # Camada de conteúdo
+                        ],
+                        expand=True,
+                    )
                 ],
             )
         )
@@ -102,7 +197,9 @@ def main(page: ft.Page):
             page.views.pop()
             page.update()
 
-
+    def atualizar_produtos_por_id():
+        global produtos_por_id
+        produtos_por_id = {produto['id']: produto for produto in get_produtos()}
 
     # Função para adicionar uma nova mesa
     def adicionar_mesa():
@@ -204,7 +301,7 @@ def main(page: ft.Page):
         except ValueError:
             print("Erro: O preço deve ser um número válido.")
 
-
+    # Função para atualizar a lista de produtos
     def atualizar_lista_produtos():
         produto_list.controls.clear()
         lista_produtos = get_produtos()
@@ -312,7 +409,7 @@ def main(page: ft.Page):
                 atualizar_lista_produtos()
                 atualizar_dropdown_produtos()
                 page.close(bs_editar)
-
+                atualizar_produtos_por_id()
             else:
                 print("Erro ao atualizar o produto.")
         except ValueError:
@@ -330,7 +427,6 @@ def main(page: ft.Page):
     #FUNÇÕES PEDIDOS
     
     def adicionar_pedido(mesa_id):
-        exibir_pedidos(mesa_id)
         page.open(bs_adicionar_pedido)
         page.mesa_id = mesa_id
         print(mesa_id)
@@ -353,12 +449,13 @@ def main(page: ft.Page):
             fit=ft.ImageFit.COVER,  
         )
     )
-
+    
     # Campos do formulário
     nome_field = ft.TextField(
         label="Nome do Produto",
         autofill_hints=ft.AutofillHint.NAME,
     )
+
     preco_field = ft.TextField(
         label="Preço",
         keyboard_type=ft.KeyboardType.NUMBER,
@@ -402,8 +499,6 @@ def main(page: ft.Page):
         
         on_click=lambda e: create_pedido(quantidade.value, page.mesa_id, buscar_id_produto_por_nome(add_list_produto.value)),)
     
-
-
     add_list_produto = ft.Dropdown(
 
     width=200,
@@ -430,7 +525,6 @@ def main(page: ft.Page):
             content=ft.Column(
                 tight=True,
                 controls=[
-                    pedidos_list,
                     quantidade,
                     add_list_produto,
                     button_add_pedido,
@@ -440,10 +534,6 @@ def main(page: ft.Page):
         ),
         
     )
-
-    
-
-
 
     #Botão para adicionar produto
     button_add_produto = ft.ElevatedButton(
@@ -486,6 +576,8 @@ def main(page: ft.Page):
         expand=True,
         spacing=10,
     )
+   
+    
     atualizar_dropdown_produtos()
     atualizar_lista_mesas()
     atualizar_lista_produtos()
