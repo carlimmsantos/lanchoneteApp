@@ -57,6 +57,7 @@ def main(page: ft.Page):
             margin=5,
         )
 
+
     # Função para exibir pedidos de uma mesa
     def exibir_pedidos(mesa_id):
         pedidos = get_pedidos_por_mesa(mesa_id)
@@ -116,6 +117,13 @@ def main(page: ft.Page):
             ),
         )
 
+        button_close_pedido = ft.ElevatedButton(
+            "Pagamentos",
+            bgcolor="green",
+            color="white",
+            on_click=lambda e: pagamento_pedido(mesa_id),
+        )
+
        
         head_pedidos = ft.Container(
             content=ft.Row(
@@ -168,6 +176,7 @@ def main(page: ft.Page):
                     ft.ElevatedButton(
                         "Voltar", on_click=lambda e: voltar()
                     ),
+                    button_close_pedido,
                 ],
                 alignment=ft.MainAxisAlignment.START,
                 spacing=20,
@@ -444,169 +453,13 @@ def main(page: ft.Page):
             ft.DropdownOption(lista_produtos[i]['nome']) for i in range(len(lista_produtos))
         ]
         page.update()  # Atualiza a página para refletir as mudanças
-
-    def filtrar_produtos(nome_produto):
-        lista_produtos = get_produtos()
-        produtos_filtrados = [p for p in lista_produtos if nome_produto.lower() in p['nome'].lower()]
-        return produtos_filtrados
-
-    campo_busca_produto = ft.TextField(
-        label="Buscar Produto",
-        bgcolor="white",
-        color="black",
-        width=400,
-        on_change=lambda e: atualizar_lista_produtos_filtrados_combinados(e.control.value, campo_busca_preco.value),
-    )
     
-    campo_busca_produto_container = ft.Container(
-        content=campo_busca_produto,
-        alignment=ft.alignment.center,
-        padding=ft.padding.all(10),  # Adiciona espaçamento ao redor
-    )
-
-# Função para atualizar a lista de produtos filtrados
-    def atualizar_lista_produtos_filtrados(nome_produto):
-        produto_list.controls.clear()  # Limpa a lista de produtos exibida
-        produtos_filtrados = filtrar_produtos(nome_produto)  # Filtra os produtos
-        for produto in produtos_filtrados:
-            produto_component = ft.Container(
-                content=ft.ListTile(
-                    title=ft.Text(produto['nome'], size=16, weight=ft.FontWeight.BOLD, color='black'),
-                    subtitle=ft.Text(f"R$ {produto['preco']:.2f}", size=12, color="black"),
-                    trailing=ft.PopupMenuButton(
-                        key=produto['id'],
-                        icon=ft.Icons.MORE_VERT,
-                        items=[
-                            ft.PopupMenuItem(
-                                text="Editar",
-                                icon=ft.Icons.EDIT,
-                                on_click=lambda e, produto_id=produto['id']: abrir_editar_produto(produto_id)
-                            ),
-                            ft.PopupMenuItem(
-                                text="Excluir",
-                                icon=ft.Icons.DELETE,
-                                on_click=lambda e, produto_id=produto['id']: excluir_produto(produto_id)
-                            )
-                        ]
-                    )
-                ),
-                padding=10,
-                margin=5,
-                border_radius=10,
-                bgcolor="white",
-                border=ft.border.all(1, "black"),
-            )
-            produto_list.controls.append(produto_component)  # Adiciona o produto filtrado à lista
-        page.update()  # Atualiza a página para refletir as mudanças
-
+    def pagamento_pedido(mesa_id):
+        page.mesa_id_pagamento = mesa_id
+        page.open(bs_pagamento)
+        page.update()
+        
     
-    # Campo de busca para filtrar produtos por preço
-    campo_busca_preco = ft.TextField(
-        label="Filtrar por Preço Máximo",
-        bgcolor="white",
-        color="black",
-        width=400,
-        keyboard_type=ft.KeyboardType.NUMBER,
-        on_change=lambda e: atualizar_lista_produtos_filtrados_combinados(campo_busca_produto.value, e.control.value),
-    )
-
-    campo_busca_preco_container = ft.Container(
-        content=campo_busca_preco,
-        alignment=ft.alignment.center,
-        padding=ft.padding.all(10),  # Adiciona espaçamento ao redor
-    )
-
-    def filtrar_produtos_por_preco(preco_maximo):
-        try:
-            preco_maximo = float(preco_maximo)  # Converte o valor para float
-            lista_produtos = get_produtos()
-            produtos_filtrados = [p for p in lista_produtos if p['preco'] <= preco_maximo]
-            return produtos_filtrados
-        except ValueError:
-            print("Erro: O preço deve ser um número válido.")
-            return []
-        
-    def atualizar_lista_produtos_filtrados_por_preco(preco_maximo):
-        produto_list.controls.clear()  # Limpa a lista de produtos exibida
-        produtos_filtrados = filtrar_produtos_por_preco(preco_maximo)  # Filtra os produtos
-        for produto in produtos_filtrados:
-            produto_component = ft.Container(
-                content=ft.ListTile(
-                    title=ft.Text(produto['nome'], size=16, weight=ft.FontWeight.BOLD, color='black'),
-                    subtitle=ft.Text(f"R$ {produto['preco']:.2f}", size=12, color="black"),
-                    trailing=ft.PopupMenuButton(
-                        key=produto['id'],
-                        icon=ft.Icons.MORE_VERT,
-                        items=[
-                            ft.PopupMenuItem(
-                                text="Editar",
-                                icon=ft.Icons.EDIT,
-                                on_click=lambda e, produto_id=produto['id']: abrir_editar_produto(produto_id)
-                            ),
-                            ft.PopupMenuItem(
-                                text="Excluir",
-                                icon=ft.Icons.DELETE,
-                                on_click=lambda e, produto_id=produto['id']: excluir_produto(produto_id)
-                            )
-                        ]
-                    )
-                ),
-                padding=10,
-                margin=5,
-                border_radius=10,
-                bgcolor="white",
-                border=ft.border.all(1, "black"),
-            )
-            produto_list.controls.append(produto_component)  # Adiciona o produto filtrado à lista
-        page.update()  # Atualiza a página para refletir as mudanças    
-
-    def filtrar_produtos_combinados(nome_produto, preco_maximo):
-        try:
-            preco_maximo = float(preco_maximo) if preco_maximo else float('inf')  # Define um valor infinito se o preço não for fornecido
-            lista_produtos = get_produtos()
-            produtos_filtrados = [
-                p for p in lista_produtos
-                if nome_produto.lower() in p['nome'].lower() and p['preco'] <= preco_maximo
-            ]
-            return produtos_filtrados
-        except ValueError:
-            print("Erro: O preço deve ser um número válido.")
-            return []   
-        
-    def atualizar_lista_produtos_filtrados_combinados(nome_produto, preco_maximo):
-        produto_list.controls.clear()  # Limpa a lista de produtos exibida
-        produtos_filtrados = filtrar_produtos_combinados(nome_produto, preco_maximo)  # Filtra os produtos
-        for produto in produtos_filtrados:
-            produto_component = ft.Container(
-                content=ft.ListTile(
-                    title=ft.Text(produto['nome'], size=16, weight=ft.FontWeight.BOLD, color='black'),
-                    subtitle=ft.Text(f"R$ {produto['preco']:.2f}", size=12, color="black"),
-                    trailing=ft.PopupMenuButton(
-                        key=produto['id'],
-                        icon=ft.Icons.MORE_VERT,
-                        items=[
-                            ft.PopupMenuItem(
-                                text="Editar",
-                                icon=ft.Icons.EDIT,
-                                on_click=lambda e, produto_id=produto['id']: abrir_editar_produto(produto_id)
-                            ),
-                            ft.PopupMenuItem(
-                                text="Excluir",
-                                icon=ft.Icons.DELETE,
-                                on_click=lambda e, produto_id=produto['id']: excluir_produto(produto_id)
-                            )
-                        ]
-                    )
-                ),
-                padding=10,
-                margin=5,
-                border_radius=10,
-                bgcolor="white",
-                border=ft.border.all(1, "black"),
-            )
-            produto_list.controls.append(produto_component)  # Adiciona o produto filtrado à lista
-        page.update()  # Atualiza a página para refletir as mudanças
-
 
     # Criar um fundo com uma imagem
     fundo = ft.Container(
@@ -685,6 +538,45 @@ def main(page: ft.Page):
         expand=True,
         spacing=10,
     )
+
+    add_list_pagamento = ft.Dropdown(
+        width=200,
+        options=[
+            ft.dropdown.Option("Pix"),
+            ft.dropdown.Option("Cartão de Crédito"),
+            ft.dropdown.Option("Cartão de Débito"),
+            ft.dropdown.Option("Dinheiro"),
+            ft.dropdown.Option("Vale Refeição"),
+        ],
+    )
+
+    bs_pagamento = ft.BottomSheet(
+        content=ft.Container(
+            padding=50,
+            content=ft.Column(
+                tight=True,
+                controls=[
+                    ft.Text("Selecione o método de pagamento"),
+                    add_list_pagamento,
+                    ft.ElevatedButton(
+                        "Fechar Pedido",
+                        bgcolor="green", 
+                        color="white", 
+                        on_click=lambda e: fechar_pedido(add_list_pagamento.value),
+            )],
+            ),
+        ),
+    )
+
+    def fechar_pedido(metodo_pagamento):
+        mesa_id = page.mesa_id_pagamento
+        print(f"Pedido fechado para a mesa {mesa_id} com método de pagamento: {metodo_pagamento}")
+
+        page.close(bs_pagamento)
+        voltar()
+
+
+
 
     # Atualize o BottomSheet para exibir os pedidos
     bs_adicionar_pedido = ft.BottomSheet(
