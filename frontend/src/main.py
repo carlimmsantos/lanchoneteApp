@@ -57,6 +57,7 @@ def main(page: ft.Page):
             margin=5,
         )
 
+
     # Função para exibir pedidos de uma mesa
     def exibir_pedidos(mesa_id):
         pedidos = get_pedidos_por_mesa(mesa_id)
@@ -116,6 +117,13 @@ def main(page: ft.Page):
             ),
         )
 
+        button_close_pedido = ft.ElevatedButton(
+            "Pagamentos",
+            bgcolor="green",
+            color="white",
+            on_click=lambda e: pagamento_pedido(mesa_id),
+        )
+
        
         head_pedidos = ft.Container(
             content=ft.Row(
@@ -168,6 +176,7 @@ def main(page: ft.Page):
                     ft.ElevatedButton(
                         "Voltar", on_click=lambda e: voltar()
                     ),
+                    button_close_pedido,
                 ],
                 alignment=ft.MainAxisAlignment.START,
                 spacing=20,
@@ -439,6 +448,12 @@ def main(page: ft.Page):
         ]
         page.update()  # Atualiza a página para refletir as mudanças
     
+    def pagamento_pedido(mesa_id):
+        page.mesa_id_pagamento = mesa_id
+        page.open(bs_pagamento)
+        page.update()
+        
+    
 
     # Criar um fundo com uma imagem
     fundo = ft.Container(
@@ -517,6 +532,45 @@ def main(page: ft.Page):
         expand=True,
         spacing=10,
     )
+
+    add_list_pagamento = ft.Dropdown(
+        width=200,
+        options=[
+            ft.dropdown.Option("Pix"),
+            ft.dropdown.Option("Cartão de Crédito"),
+            ft.dropdown.Option("Cartão de Débito"),
+            ft.dropdown.Option("Dinheiro"),
+            ft.dropdown.Option("Vale Refeição"),
+        ],
+    )
+
+    bs_pagamento = ft.BottomSheet(
+        content=ft.Container(
+            padding=50,
+            content=ft.Column(
+                tight=True,
+                controls=[
+                    ft.Text("Selecione o método de pagamento"),
+                    add_list_pagamento,
+                    ft.ElevatedButton(
+                        "Fechar Pedido",
+                        bgcolor="green", 
+                        color="white", 
+                        on_click=lambda e: fechar_pedido(add_list_pagamento.value),
+            )],
+            ),
+        ),
+    )
+
+    def fechar_pedido(metodo_pagamento):
+        mesa_id = page.mesa_id_pagamento
+        print(f"Pedido fechado para a mesa {mesa_id} com método de pagamento: {metodo_pagamento}")
+
+        page.close(bs_pagamento)
+        voltar()
+
+
+
 
     # Atualize o BottomSheet para exibir os pedidos
     bs_adicionar_pedido = ft.BottomSheet(
