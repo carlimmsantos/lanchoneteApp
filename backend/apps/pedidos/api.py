@@ -5,6 +5,7 @@ from django.http import JsonResponse
 from typing import Optional, List
 from django.shortcuts import get_object_or_404
 from apps.mesas.models import Mesa
+from apps.produtos.models import Produto
 
 pedidos_router = Router()
 
@@ -34,12 +35,21 @@ def get_pedidos(request):
 def get_pedido(request, id: int):
     return get_object_or_404(Pedido, pk=id)
 
+
+
 @pedidos_router.put('/pedido/{id}/', response=PedidoSchema)
-def put_pedido(request, id: int, pedido: PedidoSchema):
+def update_pedido(request, id: int, pedido_data: PedidoSchema):
+
     pedido = get_object_or_404(Pedido, pk=id)
-    pedido.quantidade = pedido.quantidade
-    pedido.id_produto = pedido.id_produto
+    mesa = Mesa.objects.get(id=pedido_data.mesa)
+    produto = Produto.objects.get(id=pedido_data.id_produto)
+
+    pedido.quantidade = pedido_data.quantidade
+    pedido.mesa_id = mesa.id
+    pedido.id_produto_id = produto.id
+    
     pedido.save()
+
     return pedido
 
 @pedidos_router.delete('/pedido/{id}/')

@@ -46,6 +46,7 @@ def update_produto(request, id_produto: int, data: ProdutoSchema):
     produto = get_object_or_404(Produto, id=id_produto)
     categoria = Categoria.objects.get(id=data.categoria)
 
+
     produto.nome = data.nome
     produto.preco = data.preco
     produto.categoria = categoria

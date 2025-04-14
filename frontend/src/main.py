@@ -1,7 +1,7 @@
 import flet as ft
 from utils.mesas import get_mesas, create_mesa, delete_mesa, alterar_mesa_status
 from utils.produtos import get_produtos, create_produto, delete_produto, update_produto
-from utils.pedidos import create_pedido, get_pedidos_por_mesa, apagar_pedidos_mesa
+from utils.pedidos import create_pedido, get_pedidos_por_mesa, apagar_pedidos_mesa, update_pedido
 
 
 
@@ -59,7 +59,9 @@ def main(page: ft.Page):
 
 
     # Função para exibir pedidos de uma mesa
-    def exibir_pedidos(mesa_id):
+    def exibir_pedidos(mesa_id, numeracao_mesa):
+
+        print(f"numeracao mesa: {numeracao_mesa}")
         pedidos = get_pedidos_por_mesa(mesa_id)
 
         pedidos_list.controls.clear()
@@ -82,9 +84,24 @@ def main(page: ft.Page):
                                 title=ft.Text(f"Pedido {pedido['pedido_id']}"),
                                 subtitle=ft.Text(
                                     f"{pedido['quantidade']} X {produto['nome']} = R$ {pedido['quantidade'] * produto['preco']:.2f}",
-                                    size=12, color="black"
+                                    size=12, color="black"),
+                                    trailing=ft.PopupMenuButton(
+                                    key=pedido['pedido_id'],
+                                    icon=ft.Icons.MORE_VERT,
+                                    items=[
+                                       ft.PopupMenuItem(
+                                            text="Editar",
+                                            icon=ft.Icons.EDIT,
+                                            on_click=lambda e, pedido_id=pedido['pedido_id']: abrir_editar_pedido(pedido_id, mesa_id, numeracao_mesa),
+                                        ),
+                                        ft.PopupMenuItem(
+                                            text="Excluir",
+                                            icon=ft.Icons.DELETE,
+                                        )
+                                    ]
                                 ),
-                            ),
+                                ),
+                            
                             bgcolor="white",
                             padding=10,
                             margin=5,
@@ -147,7 +164,7 @@ def main(page: ft.Page):
                     ft.Column(
                         [
                             ft.Text(
-                                f"Mesa {mesa_id}",
+                                f"Mesa {numeracao_mesa}",
                                 size=21,
                                 weight=ft.FontWeight.BOLD,
                                 color="black",
@@ -208,13 +225,14 @@ def main(page: ft.Page):
                 ],
             )
         )
-        page.overlay.append(bs_pagamento)
+        
 
         page.update()
 
     def voltar():
         if page.views:
-            page.views.pop()
+            while len(page.views) > 1:
+              page.views.pop()
             page.update()
 
     def atualizar_produtos_por_id():
@@ -291,8 +309,9 @@ def main(page: ft.Page):
                             ft.PopupMenuItem(
                                 text="Ver Pedidos",
                                 icon=ft.Icons.LIST,
-                                on_click=lambda e, mesa_id=mesa["id"]: exibir_pedidos(
-                                    mesa_id
+                                on_click=lambda e, mesa_id=mesa["id"], numero_mesa = mesa["numero"]: exibir_pedidos(
+                                    mesa_id,
+                                    numero_mesa
                                 ),
                             ),
                         ],
@@ -333,7 +352,8 @@ def main(page: ft.Page):
     # Função para atualizar a lista de produtos
     def atualizar_lista_produtos():
         produto_list.controls.clear()
-        lista_produtos = get_produtos()
+        
+        lista_produtos = sorted(get_produtos(), key=lambda produto: produto['nome'])
         for produto in lista_produtos:
             produto_component = ft.Container(
                 content=ft.ListTile(
@@ -388,6 +408,54 @@ def main(page: ft.Page):
         if delete_produto(produto_id):
             atualizar_lista_produtos()
 
+    def abrir_editar_pedido(pedido_id, id_mesa, mesa_numero):
+        
+        page.pedido_id = pedido_id
+        page.mesa_id = id_mesa
+
+        page.numero_mesa = mesa_numero
+       
+        pedido = next((p for p in get_pedidos_por_mesa(id_mesa) if p["pedido_id"] == pedido_id), None)
+
+        print("Estou aqui meu REI")
+        print("Rise")
+
+        if pedido:
+            
+            page.nova_quantidade = str(pedido["quantidade"])
+            page.novo_produto = pedido["produto_nome"]
+           
+            page.open(bs_editar_pedido)
+            page.update()
+            
+
+    def atualizar_pedido(pedido_id, nova_quantidade_value, id_mesa, novo_produto):
+        try:
+            
+            nova_quantidade = int(nova_quantidade_value.value) 
+
+            
+            produto_id = buscar_id_produto_por_nome(novo_produto)
+
+            if produto_id is not None:
+              
+                if update_pedido(pedido_id, nova_quantidade, id_mesa, produto_id):
+
+                    print(f"Pedido {pedido_id} atualizado com sucesso!")
+                    exibir_pedidos(page.mesa_id, page.numero_mesa)
+                    page.close(bs_editar_pedido)
+                    atualizar_lista_mesas(layout_principal)
+                    
+                    page.update()
+                else:
+                    print("Erro ao atualizar o pedido.")
+            else:
+                print(f"Produto '{novo_produto}' não encontrado.")
+        except ValueError:
+            print("Erro: A quantidade deve ser um número válido.")
+
+
+
     # Função para mudar de abas
     def change_page(event):
         # Limpa o conteúdo atual da aba
@@ -436,7 +504,7 @@ def main(page: ft.Page):
     # Função para atualizar a lista de produtos
     def atualizar_produtos(nome, preco):
         try:
-            preco = float(preco)  # Certifique-se de que o preço é um número
+            preco = float(preco)  
             id_produto = page.id_produto_atual
             print(id_produto)
             if update_produto(id_produto, nome, preco):
@@ -474,7 +542,7 @@ def main(page: ft.Page):
         add_list_produto.options = [
             ft.DropdownOption(lista_produtos[i]['nome']) for i in range(len(lista_produtos))
         ]
-        page.update()  # Atualiza a página para refletir as mudanças
+        page.update()  
     
     def pagamento_pedido(mesa_id):
         page.mesa_id_pagamento = mesa_id
@@ -563,6 +631,10 @@ def main(page: ft.Page):
         keyboard_type=ft.KeyboardType.NUMBER,
     )
 
+    
+
+
+
     # BottomSheet para adicionar produto
     bs = ft.BottomSheet(
         content=ft.Container(
@@ -591,6 +663,40 @@ def main(page: ft.Page):
                     ft.ElevatedButton("Atualizar Produto",
                     on_click=lambda e: atualizar_produtos(nome_field.value, preco_field.value)),
                 ],
+            ),
+        ),
+    )
+
+    quantidade_field = ft.TextField(
+        label="Quantidade",
+        keyboard_type=ft.KeyboardType.NUMBER,
+        on_change=lambda e: setattr(page, "quantidade", e.control.value),)
+
+    bs_editar_pedido = ft.BottomSheet(
+        content=ft.Container(
+            padding=50,
+            content=ft.Column(
+
+                tight=True,
+                controls=[
+                quantidade_field,
+                ft.Dropdown(
+                    label="Produto",
+                    width=200,
+                    options=[
+                        ft.DropdownOption(produto["nome"]) for produto in get_produtos()
+                    ],
+                    on_change=lambda e: setattr(page, "novo_produto", e.control.value),
+                ),
+                ft.ElevatedButton(
+                    "Atualizar Pedido",
+                    bgcolor="green",
+                    color="white",
+                    on_click=lambda e: atualizar_pedido(
+                        page.pedido_id, quantidade_field, page.mesa_id, page.novo_produto
+                    ),
+                ),
+            ],
             ),
         ),
     )
@@ -819,7 +925,12 @@ def main(page: ft.Page):
     atualizar_lista_mesas(layout_principal)
     
     app = App()
-    content.controls.append(app) 
+    content.controls.append(app)
+    page.overlay.append(bs)
+    page.overlay.append(bs_editar)
+    page.overlay.append(bs_editar_pedido)
+    page.overlay.append(bs_pagamento)
+    page.overlay.append(bs_adicionar_pedido)
     
     
     page.add(ft.Stack([
