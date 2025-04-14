@@ -102,7 +102,14 @@ def main(page: ft.Page):
 
         else:
             pedidos_list.controls.append(
-                ft.Text(f"Nenhum pedido encontrado para a mesa {mesa_id}.")
+                 ft.Container(
+                    content=ft.Text(f"Mesa Disponível, nenhum pedido encontrado.", size=16, color="black"),
+                    bgcolor="white",
+                    padding=10,
+                    margin=5,
+                    border_radius=10,
+                    border=ft.border.all(1, "black"),
+                )
             )
 
         page.update()
@@ -394,10 +401,10 @@ def main(page: ft.Page):
         elif event.control.selected_index == 1:  # Aba "Produtos"
             atualizar_lista_produtos()  # Atualiza a lista de produtos
             conteudo.content.controls.append(
-                campo_busca_produto_container,  # Adiciona o campo de busca por nome
+                #campo_busca_produto_container,  # Adiciona o campo de busca por nome
             )
             conteudo.content.controls.append(
-                campo_busca_preco_container,  # Adiciona o campo de busca por preço
+                #campo_busca_preco_container,  # Adiciona o campo de busca por preço
             )
             conteudo.content.controls.append(
                 button_add_produto_container,
@@ -468,180 +475,8 @@ def main(page: ft.Page):
         page.open(bs_pagamento)
 
         page.update()
-
-
-    def filtrar_produtos_por_preco(preco_maximo):
-        try:
-            preco_maximo = float(preco_maximo)  # Converte o valor para float
-            lista_produtos = get_produtos()
-            produtos_filtrados = [p for p in lista_produtos if p['preco'] <= preco_maximo]
-            return produtos_filtrados
-        except ValueError:
-            print("Erro: O preço deve ser um número válido.")
-            return [] 
-
-    def atualizar_lista_produtos_filtrados_por_preco(preco_maximo):
-        produto_list.controls.clear()  # Limpa a lista de produtos exibida
-        produtos_filtrados = filtrar_produtos_por_preco(preco_maximo)  # Filtra os produtos
-        for produto in produtos_filtrados:
-            produto_component = ft.Container(
-                content=ft.ListTile(
-                    title=ft.Text(produto['nome'], size=16, weight=ft.FontWeight.BOLD, color='black'),
-                    subtitle=ft.Text(f"R$ {produto['preco']:.2f}", size=12, color="black"),
-                    trailing=ft.PopupMenuButton(
-                        key=produto['id'],
-                        icon=ft.Icons.MORE_VERT,
-                        items=[
-                            ft.PopupMenuItem(
-                                text="Editar",
-                                icon=ft.Icons.EDIT,
-                                on_click=lambda e, produto_id=produto['id']: abrir_editar_produto(produto_id)
-                            ),
-                            ft.PopupMenuItem(
-                                text="Excluir",
-                                icon=ft.Icons.DELETE,
-                                on_click=lambda e, produto_id=produto['id']: excluir_produto(produto_id)
-                            )
-                        ]
-                    )
-                ),
-                padding=10,
-                margin=5,
-                border_radius=10,
-                bgcolor="white",
-                border=ft.border.all(1, "black"),
-            )
-            produto_list.controls.append(produto_component)  # Adiciona o produto filtrado à lista
-        page.update()  # Atualiza a página para refletir as mudanças       
-
-
-    def filtrar_produtos(nome_produto):
-        lista_produtos = get_produtos()
-        produtos_filtrados = [p for p in lista_produtos if nome_produto.lower() in p['nome'].lower()]
-        return produtos_filtrados
-
-    def filtrar_produtos_por_preco(preco_maximo):
-        try:
-            preco_maximo = float(preco_maximo)  # Converte o valor para float
-            lista_produtos = get_produtos()
-            produtos_filtrados = [p for p in lista_produtos if p['preco'] <= preco_maximo]
-            return produtos_filtrados
-        except ValueError:
-            print("Erro: O preço deve ser um número válido.")
-            return []
         
-    def atualizar_lista_produtos_filtrados(nome_produto):
-        produto_list.controls.clear()  # Limpa a lista de produtos exibida
-        produtos_filtrados = filtrar_produtos(nome_produto)  # Filtra os produtos
-        for produto in produtos_filtrados:
-            produto_component = ft.Container(
-                content=ft.ListTile(
-                    title=ft.Text(produto['nome'], size=16, weight=ft.FontWeight.BOLD, color='black'),
-                    subtitle=ft.Text(f"R$ {produto['preco']:.2f}", size=12, color="black"),
-                    trailing=ft.PopupMenuButton(
-                        key=produto['id'],
-                        icon=ft.Icons.MORE_VERT,
-                        items=[
-                            ft.PopupMenuItem(
-                                text="Editar",
-                                icon=ft.Icons.EDIT,
-                                on_click=lambda e, produto_id=produto['id']: abrir_editar_produto(produto_id)
-                            ),
-                            ft.PopupMenuItem(
-                                text="Excluir",
-                                icon=ft.Icons.DELETE,
-                                on_click=lambda e, produto_id=produto['id']: excluir_produto(produto_id)
-                            )
-                        ]
-                    )
-                ),
-                padding=10,
-                margin=5,
-                border_radius=10,
-                bgcolor="white",
-                border=ft.border.all(1, "black"),
-            )
-            produto_list.controls.append(produto_component)  # Adiciona o produto filtrado à lista
-        page.update()  # Atualiza a página para refletir as mudanças
-
-    def filtrar_produtos_combinados(nome_produto, preco_maximo):
-        try:
-            preco_maximo = float(preco_maximo) if preco_maximo else float('inf')  # Define um valor infinito se o preço não for fornecido
-            lista_produtos = get_produtos()
-            produtos_filtrados = [
-                p for p in lista_produtos
-                if nome_produto.lower() in p['nome'].lower() and p['preco'] <= preco_maximo
-            ]
-            return produtos_filtrados
-        except ValueError:
-            print("Erro: O preço deve ser um número válido.")
-            return []
-
-    def atualizar_lista_produtos_filtrados_combinados(nome_produto, preco_maximo):
-        produto_list.controls.clear()  # Limpa a lista de produtos exibida
-        produtos_filtrados = filtrar_produtos_combinados(nome_produto, preco_maximo)  # Filtra os produtos
-        for produto in produtos_filtrados:
-            produto_component = ft.Container(
-                content=ft.ListTile(
-                    title=ft.Text(produto['nome'], size=16, weight=ft.FontWeight.BOLD, color='black'),
-                    subtitle=ft.Text(f"R$ {produto['preco']:.2f}", size=12, color="black"),
-                    trailing=ft.PopupMenuButton(
-                        key=produto['id'],
-                        icon=ft.Icons.MORE_VERT,
-                        items=[
-                            ft.PopupMenuItem(
-                                text="Editar",
-                                icon=ft.Icons.EDIT,
-                                on_click=lambda e, produto_id=produto['id']: abrir_editar_produto(produto_id)
-                            ),
-                            ft.PopupMenuItem(
-                                text="Excluir",
-                                icon=ft.Icons.DELETE,
-                                on_click=lambda e, produto_id=produto['id']: excluir_produto(produto_id)
-                            )
-                        ]
-                    )
-                ),
-                padding=10,
-                margin=5,
-                border_radius=10,
-                bgcolor="white",
-                border=ft.border.all(1, "black"),
-            )
-            produto_list.controls.append(produto_component)  # Adiciona o produto filtrado à lista
-        page.update()  # Atualiza a página para refletir as mudanças
-
-        
-    # Campo de busca para filtrar produtos por preço
-    campo_busca_preco = ft.TextField(
-        label="Filtrar por Preço Máximo",
-        bgcolor="white",
-        color="black",
-        width=400,
-        keyboard_type=ft.KeyboardType.NUMBER,
-        on_change=lambda e: atualizar_lista_produtos_filtrados_combinados(campo_busca_produto.value, e.control.value),
-    )
-
-    campo_busca_preco_container = ft.Container(
-        content=campo_busca_preco,
-        alignment=ft.alignment.center,
-        padding=ft.padding.all(10),
-    )
     
-    campo_busca_produto = ft.TextField(
-        label="Buscar Produto",
-        bgcolor="white",
-        color="black",
-        width=400,
-        on_change=lambda e: atualizar_lista_produtos_filtrados_combinados(e.control.value, campo_busca_preco.value),
-    )
-
-    campo_busca_produto_container = ft.Container(
-        content=campo_busca_produto,
-        alignment=ft.alignment.center,
-        padding=ft.padding.all(10),
-    )
-
 
     # Criar um fundo com uma imagem
     fundo = ft.Container(
