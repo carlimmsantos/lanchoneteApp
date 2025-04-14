@@ -19,7 +19,7 @@ def main(page: ft.Page):
     page.window.resizable = False
 
     # Função para criar o cabeçalho
-    def criar_header():
+    def criar_header(numero_mesa):
         return ft.Container(
             content=ft.Row(
                 [
@@ -39,7 +39,7 @@ def main(page: ft.Page):
                                 color="black",
                             ),
                             ft.Text(
-                                f"Mesas Disponíveis: {len(get_mesas())}",
+                                f"Mesas Disponíveis: {numero_mesa}",
                                 size=12,
                                 color="black",
                             ),
@@ -223,17 +223,26 @@ def main(page: ft.Page):
 
     # Função para adicionar uma nova mesa
     def adicionar_mesa():
+
         numero_nova_mesa = len(get_mesas()) + 1
+
         if create_mesa(numero_nova_mesa):
-            atualizar_lista_mesas()
+            atualizar_lista_mesas(layout_principal)
             print(f"Mesa {numero_nova_mesa} criada com sucesso!")
         else:
             print("Erro ao criar a mesa.")
 
     # Função para atualizar a lista de mesas
-    def atualizar_lista_mesas():
+    def atualizar_lista_mesas(layout_principal):
+
+        numero_mesa = len(get_mesas())
+
+        header = criar_header(numero_mesa)
+        layout_principal.controls[0] = header
+
         mesa_list.controls.clear()
-        lista_mesas = get_mesas()
+        lista_mesas = sorted(get_mesas(), key=lambda mesa: mesa['numero'])
+
         for mesa in lista_mesas:
             mesa_component = ft.Container(
                 content=ft.ListTile(
@@ -301,7 +310,7 @@ def main(page: ft.Page):
     # Função para excluir uma mesa
     def excluir_mesa(mesa_id):
         if delete_mesa(mesa_id):
-            atualizar_lista_mesas()
+            atualizar_lista_mesas(layout_principal)
 
     # Função para adicionar um novo produto
     def adicionar_produto(nome, preco):
@@ -386,7 +395,7 @@ def main(page: ft.Page):
 
         # Verifica qual aba foi selecionada
         if event.control.selected_index == 0: 
-            atualizar_lista_mesas()
+            atualizar_lista_mesas(layout_principal)
             conteudo.content.controls.append(
                 button_add_container
             ),
@@ -401,10 +410,10 @@ def main(page: ft.Page):
         elif event.control.selected_index == 1:  # Aba "Produtos"
             atualizar_lista_produtos()  # Atualiza a lista de produtos
             conteudo.content.controls.append(
-                #campo_busca_produto_container,  # Adiciona o campo de busca por nome
+                campo_busca_produto_container,  # Adiciona o campo de busca por nome
             )
             conteudo.content.controls.append(
-                #campo_busca_preco_container,  # Adiciona o campo de busca por preço
+                campo_busca_preco_container,  # Adiciona o campo de busca por preço
             )
             conteudo.content.controls.append(
                 button_add_produto_container,
@@ -458,7 +467,7 @@ def main(page: ft.Page):
         page.mesa_id = mesa_id
         page.update()
         alterar_mesa_status(mesa_id)
-        atualizar_lista_mesas()
+        atualizar_lista_mesas(layout_principal)
         
     def atualizar_dropdown_produtos():
         lista_produtos = get_produtos()  
@@ -476,7 +485,62 @@ def main(page: ft.Page):
 
         page.update()
         
-    
+    def filtrar_produtos_combinados(nome_produto, preco_maximo):
+        try:
+            preco_maximo = float(preco_maximo) if preco_maximo else float('inf')  # Define um valor infinito se o preço não for fornecido
+            lista_produtos = get_produtos()
+            produtos_filtrados = [
+                p for p in lista_produtos
+                if nome_produto.lower() in p['nome'].lower() and p['preco'] <= preco_maximo
+            ]
+            return produtos_filtrados
+        except ValueError:
+            print("Erro: O preço deve ser um número válido.")
+            return []
+
+    def atualizar_lista_produtos_filtrados_combinados(nome_produto, preco_maximo):
+        produto_list.controls.clear()  # Limpa a lista de produtos exibida
+        produtos_filtrados = filtrar_produtos_combinados(nome_produto, preco_maximo)  # Filtra os produtos
+        for produto in produtos_filtrados:
+            produto_component = ft.Container(
+                content=ft.ListTile(
+                    title=ft.Text(produto['nome'], size=16, weight=ft.FontWeight.BOLD, color='black'),
+                    subtitle=ft.Text(f"R$ {produto['preco']:.2f}", size=12, color="black"),
+                    trailing=ft.PopupMenuButton(
+                        key=produto['id'],
+                        icon=ft.Icons.MORE_VERT,
+                        items=[
+                            ft.PopupMenuItem(
+                                text="Editar",
+                                icon=ft.Icons.EDIT,
+                                on_click=lambda e, produto_id=produto['id']: abrir_editar_produto(produto_id)
+                            ),
+                            ft.PopupMenuItem(
+                                text="Excluir",
+                                icon=ft.Icons.DELETE,
+                                on_click=lambda e, produto_id=produto['id']: excluir_produto(produto_id)
+                            )
+                        ]
+                    )
+                ),
+                padding=10,
+                margin=5,
+                border_radius=10,
+                bgcolor="white",
+                border=ft.border.all(1, "black"),
+            )
+            produto_list.controls.append(produto_component)  # Adiciona o produto filtrado à lista
+        page.update()  # Atualiza a página para refletir as mudanças
+
+    def fechar_pedido(metodo_pagamento, mesa_id):
+        print(f"Pedido fechado para a mesa {mesa_id} com método de pagamento: {metodo_pagamento}")
+        
+        apagar_pedidos_mesa(mesa_id)  
+        atualizar_lista_mesas(layout_principal)
+        page.close(bs_pagamento)
+        voltar()
+
+
 
     # Criar um fundo com uma imagem
     fundo = ft.Container(
@@ -598,14 +662,6 @@ def main(page: ft.Page):
         ),
     )
 
-    def fechar_pedido(metodo_pagamento, mesa_id):
-        print(f"Pedido fechado para a mesa {mesa_id} com método de pagamento: {metodo_pagamento}")
-        
-        apagar_pedidos_mesa(mesa_id)  
-        atualizar_lista_mesas()
-        page.close(bs_pagamento)
-        voltar()
-
 
 
 
@@ -670,7 +726,7 @@ def main(page: ft.Page):
    
     
     atualizar_dropdown_produtos()
-    atualizar_lista_mesas()
+    
     atualizar_lista_produtos()
 
     content = ft.Column()
@@ -711,12 +767,45 @@ def main(page: ft.Page):
             expand=True,
         ),
     )
+
+     # Campo de busca para filtrar produtos por preço
+    campo_busca_preco = ft.TextField(
+        label="Filtrar por Preço Máximo",
+        bgcolor="white",
+        color="black",
+        width=400,
+        keyboard_type=ft.KeyboardType.NUMBER,
+        on_change=lambda e: atualizar_lista_produtos_filtrados_combinados(campo_busca_produto.value, e.control.value),
+    )
+
+    campo_busca_preco_container = ft.Container(
+        content=campo_busca_preco,
+        alignment=ft.alignment.center,
+        padding=ft.padding.all(10),
+    )
     
+    campo_busca_produto = ft.TextField(
+        label="Buscar Produto",
+        bgcolor="white",
+        color="black",
+        width=400,
+        on_change=lambda e: atualizar_lista_produtos_filtrados_combinados(e.control.value, campo_busca_preco.value),
+    )
+
+    campo_busca_produto_container = ft.Container(
+        content=campo_busca_produto,
+        alignment=ft.alignment.center,
+        padding=ft.padding.all(10),
+    )
+
+
+    
+    numero_mesa = len(get_mesas())
 
     # Adicionar a barra de navegação fixa no rodapé
     layout_principal = ft.Column(
         controls=[
-            criar_header(),
+            criar_header(numero_mesa),
             ft.Container(
                 content=conteudo,
                 expand=True,
@@ -726,7 +815,8 @@ def main(page: ft.Page):
         alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
         expand=True,
     )
-
+    
+    atualizar_lista_mesas(layout_principal)
     
     app = App()
     content.controls.append(app) 
