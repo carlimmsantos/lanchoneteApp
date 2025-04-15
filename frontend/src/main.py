@@ -178,11 +178,12 @@ def main(page: ft.Page):
 
 
                         ],
+                        
                         spacing=10,
 
                     ),
                 ],
-                alignment=ft.MainAxisAlignment.START,
+                alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
             ),
             padding=10,
             border_radius=20,
@@ -266,63 +267,83 @@ def main(page: ft.Page):
              
             mesa_component = ft.Container(
                 content=ft.ListTile(
-                    title=ft.Row(
+
+                    title=ft.Container(
+                    content=ft.Row(
                         controls=[
                             ft.Text(
                                 f"Mesa {mesa['numero']:02d}",
-                                size=16,
+                                size=21,
                                 weight=ft.FontWeight.BOLD,
                                 color="black",
                             ),
-                            ft.Text(
-                                f"{'Disponível' if mesa['status'] else 'Indisponível'}",
-                                size=16,
-                                weight=ft.FontWeight.BOLD,
-                                color="green" if mesa['status'] else "red",
-                            ),
-                        ],
-                        alignment=ft.MainAxisAlignment.START,
-                        spacing=20,
-                        height=60,
-                    ),
-                    trailing=ft.PopupMenuButton(
-                        key=mesa["id"],
-                        icon=ft.Icons.MORE_VERT,
-                        items=[
-                            ft.PopupMenuItem(
-                                text="Editar",
-                                icon=ft.Icons.EDIT,
-                                on_click=lambda e: print("Editar"),
-                            ),
-                            ft.PopupMenuItem(
-                                text="Excluir",
-                                icon=ft.Icons.DELETE,
-                                on_click=lambda e, mesa_id=mesa["id"]: excluir_mesa(
-                                    mesa_id
+                            ft.Container(expand=True),
+                            
+                            ft.Container(
+                                content=ft.Text(
+                                    f"{'Disponível' if mesa['status'] else 'Indisponível'}",
+                                    size=16,
+                                    weight=ft.FontWeight.BOLD,
+                                    color="white",
                                 ),
-                            ),
-                            ft.PopupMenuItem(
-                                text="Adicionar Pedido",
-                                icon=ft.Icons.ADD,
-                                on_click=lambda e, mesa_id=mesa["id"], numero_mesa = mesa["numero"]: adicionar_pedido(
-                                    mesa_id,
-                                    numero_mesa
+                                alignment=ft.alignment.center,
+                                bgcolor="green" if mesa['status'] else "red",
+                                padding=ft.padding.symmetric(vertical=5),
+                                border_radius=30,
+                                width=130,
+                            )
+                        ],
+                        alignment=ft.MainAxisAlignment.END,
+                    ),
+                    padding=ft.padding.only(bottom=60),
+                ),
+
+                    
+                subtitle= ft.Row(
+                    controls=[
+
+                        ft.Row(
+                                controls=[
+                                        
+                                    ft.ElevatedButton(
+                                        text="Adicionar",
+                                        icon=ft.Icons.ADD,
+                                        bgcolor="green",
+                                        color="white",
+                                        on_click=lambda e, mesa_id=mesa["id"], numero_mesa=mesa["numero"]: adicionar_pedido(
+                                            mesa_id, numero_mesa
+                                            ),
+                                        ),
+                                    ft.ElevatedButton(
+                                        text="Ver Pedidos",
+                                        icon=ft.Icons.LIST,
+                                        bgcolor="blue",
+                                        color="white",
+                                        on_click=lambda e, mesa_id=mesa["id"], numero_mesa=mesa["numero"]: exibir_pedidos(
+                                                mesa_id, numero_mesa
+                                            ),
+                                        ),
+                                    ft.ElevatedButton(
+                                        text="Excluir",
+                                        icon=ft.Icons.DELETE,
+                                        bgcolor="red",
+                                        color="white",
+                                        on_click=lambda e, mesa_id=mesa["id"]: excluir_mesa(mesa_id),
+                                        ),
+                                    ],
                                 
-                                ),
-                            ),
-                            ft.PopupMenuItem(
-                                text="Ver Pedidos",
-                                icon=ft.Icons.LIST,
-                                on_click=lambda e, mesa_id=mesa["id"], numero_mesa = mesa["numero"]: exibir_pedidos(
-                                    mesa_id,
-                                    numero_mesa
-                                ),
-                            ),
-                        ],
+                                    alignment=ft.MainAxisAlignment.SPACE_BETWEEN,  
+                                )
+                            
+
+                            ],
+                            alignment=ft.MainAxisAlignment.END,
+                            
                     ),
+                
                 ),
                 padding=10,
-                margin=5,
+                margin=3,
                 border_radius=10,
                 bgcolor="white",
                 border=ft.border.all(1, "black"),
