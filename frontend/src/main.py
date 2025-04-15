@@ -32,7 +32,7 @@ def main(page: ft.Page):
                     ft.Column(
                         [
                             ft.Text(
-                                "Usuario: Admin",
+                                'Bem vindo, Administrador',
                                 size=14,
                                 weight=ft.FontWeight.BOLD,
                                 color="black",
