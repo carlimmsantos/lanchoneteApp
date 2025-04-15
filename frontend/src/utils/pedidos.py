@@ -57,7 +57,17 @@ def get_pedidos_por_mesa(mesa_id):
     except Exception as e:
         print(f"Erro ao buscar pedidos: {e}")
         return []
-    
+
+def delete_pedido(pedido_id):
+    try:
+        response = requests.delete(f"{BASE_URL}/pedido/{pedido_id}/")
+        response.raise_for_status()
+        return response.json()
+    except requests.exceptions.RequestException as e:
+        print(f"Erro ao deletar pedido: {e}")
+        return None
+
+
 def apagar_pedidos_mesa(mesa_id):
     try:
         # Conexão com o banco de dados

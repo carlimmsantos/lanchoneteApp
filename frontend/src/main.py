@@ -1,8 +1,7 @@
 import flet as ft
 from utils.mesas import get_mesas, create_mesa, delete_mesa, atualizar_mesa, atualizar_status_mesa
 from utils.produtos import get_produtos, create_produto, delete_produto, update_produto
-from utils.pedidos import create_pedido, get_pedidos_por_mesa, apagar_pedidos_mesa, update_pedido
-
+from utils.pedidos import create_pedido, get_pedidos_por_mesa, apagar_pedidos_mesa, update_pedido, delete_pedido
 
 
 class App(ft.Column):
@@ -96,7 +95,8 @@ def main(page: ft.Page):
                                         ),
                                         ft.PopupMenuItem(
                                             text="Excluir",
-                                            icon=ft.Icons.DELETE,
+                                            icon=ft.Icons.DELETE, 
+                                            on_click=lambda e, pedido_id=pedido['pedido_id']: excluir_pedido(pedido_id, mesa_id, numeracao_mesa),
                                         )
                                     ]
                                 ),
@@ -329,6 +329,13 @@ def main(page: ft.Page):
             )
             mesa_list.controls.append(mesa_component)
         page.update()
+
+    def excluir_pedido(pedido_id, mesa_id, numero_mesa):
+        if delete_pedido(pedido_id):
+            exibir_pedidos(mesa_id, numero_mesa)
+
+            atualizar_status_mesa(mesa_id, numero_mesa)
+            atualizar_lista_mesas(layout_principal)
 
     # Função para excluir uma mesa
     def excluir_mesa(mesa_id):
