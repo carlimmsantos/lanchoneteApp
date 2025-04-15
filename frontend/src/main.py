@@ -345,7 +345,7 @@ def main(page: ft.Page):
     # Função para adicionar um novo produto
     def adicionar_produto(nome, preco):
         try:
-            preco = float(preco)  # Certifique-se de que o preço é um número
+            preco = float(preco)  
             if create_produto(nome, preco):
                 print(f"Produto {nome} criado com sucesso!")
                 atualizar_lista_produtos()
