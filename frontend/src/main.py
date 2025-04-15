@@ -2,7 +2,7 @@ import flet as ft
 from utils.mesas import get_mesas, create_mesa, delete_mesa, atualizar_mesa, atualizar_status_mesa
 from utils.produtos import get_produtos, create_produto, delete_produto, update_produto
 from utils.pedidos import create_pedido, get_pedidos_por_mesa, apagar_pedidos_mesa, update_pedido, delete_pedido
-from utils.relatorios import create_relatorio
+from utils.relatorios import create_relatorio, get_relatorios
 
 class App(ft.Column):
     def __init__(self):
@@ -505,9 +505,14 @@ def main(page: ft.Page):
             )
         
         elif event.control.selected_index == 2: 
+            atualizar_lista_relatorios()
             conteudo.content.controls.append(
-                ft.Text("Administração Em Desenvolvimento", size=16)
+                ft.Container(
+                    content=relatorio_list,
+                    expand=True,
+                ),
             )
+            
 
         # Atualiza a página para refletir as mudanças
         page.update()
@@ -673,6 +678,59 @@ def main(page: ft.Page):
         page.update()
 
 
+    def atualizar_lista_relatorios():
+        relatorio_list.controls.clear()
+
+        lista_relatorios = sorted(get_relatorios(), key=lambda relatorio: relatorio['numero_mesa'])
+
+        for relatorio in lista_relatorios:
+            
+            relatorio_component = ft.Container(
+            content=ft.ListTile(
+                title=ft.Column(
+                    controls=[
+                        ft.Row(
+                            controls=[
+                                ft.Text(
+                                    f"Mesa {relatorio['numero_mesa']}",
+                                    size=21,
+                                    weight=ft.FontWeight.BOLD,
+                                    color="black",
+                                ),
+                                ft.Text(
+                                    f"R$ {relatorio['valor_total']}",
+                                    size=18,
+                                    color="black",
+                                    weight=ft.FontWeight.BOLD,
+                                ),
+                            ],
+                            alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
+                        ),
+                    ],
+                    spacing=20,  
+                ),
+                subtitle=ft.Column(
+                    controls=[
+                        ft.Text(f"Desconto: {relatorio['desconto']}", size=12, color="black"),
+                        ft.Text(f"Tipo de Desconto: {relatorio['tipo_desconto']}", size=12, color="black"),
+                        ft.Text(f"Forma de Pagamento: {relatorio['tipo_pagamento']}", size=12, color="black"),
+                        ft.Text(f"Quantidade de Pedidos: {relatorio['quantidade_pedidos']}", size=12, color="black"),
+                    ],
+                    spacing=5, 
+                ),
+            ),
+            padding=10,
+            margin=5,
+            border_radius=10,
+            bgcolor="white",
+            border=ft.border.all(1, "black"),
+        )
+            relatorio_list.controls.append(relatorio_component)
+
+        page.update()
+
+
+
     # Criar um fundo com uma imagem
     fundo = ft.Container(
         width=400,
@@ -780,6 +838,11 @@ def main(page: ft.Page):
     on_change=lambda e: print(f"Produto selecionado: ID={add_list_produto.value}"),
     )
 
+    relatorio_list = ft.Column(
+            scroll=ft.ScrollMode.ALWAYS,  
+            expand=True,
+            spacing=10,
+        )
 
 
     
@@ -989,6 +1052,8 @@ def main(page: ft.Page):
     )
     
     atualizar_lista_mesas(layout_principal)
+    
+    
     
     app = App()
     content.controls.append(app)
