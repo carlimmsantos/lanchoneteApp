@@ -33,39 +33,56 @@ def delete_mesa(mesa_id):
     except requests.exceptions.RequestException as e:
         print(f"Erro ao deletar mesa: {e}")
         return False
-    
+
+def atualizar_mesa(mesa_id, numero, status):
+    try:
+        response = requests.put(f"{BASE_URL}/mesa/{mesa_id}/", json={"numero": numero , "status": status})
+        response.raise_for_status()
+        return response.json()
+    except requests.exceptions.RequestException as e:
+        print(f"Erro ao atualizar mesa: {e}")
+        return None
 
 
-def alterar_mesa_status(mesa_id):
+def atualizar_status_mesa(mesa_id, numero):
     try:
         
         conn = psycopg2.connect(
             dbname="Gerencia",
             user="postgres",
-            password="santos2018",  
+            password="santos2018", 
             host="localhost",
             port="5432"
         )
-        
         cursor = conn.cursor()
 
-
-        cursor.execute("CALL alterar_mesa_status(%s);", (mesa_id,))
+        
+        
+        cursor.execute("SELECT verificar_pedidos_mesa(%s);", (mesa_id,))
+        resultado = cursor.fetchone()[0]  
+        
 
         
-        conn.commit()
+        novo_status = not resultado  # Se houver pedidos (True), status será False; caso contrário, True
 
-        print(f"Status da mesa {mesa_id} atualizado com sucesso.")
-        return True
+        print(f"[atualizar_status_mesa] Mesa {mesa_id} tem pedidos: {resultado}. Atualizando status para {'Disponível' if novo_status else 'Ocupado'}.")
+        response = atualizar_mesa(mesa_id, numero=numero, status=novo_status)
+
+        if response:
+            print(f"[atualizar_status_mesa] Status da mesa {mesa_id} atualizado para {'Disponível' if novo_status else 'Ocupado'}.")
+            return True
+        else:
+            print(f"[atualizar_status_mesa] Falha ao atualizar o status da mesa {mesa_id}.")
+            return False
 
     except psycopg2.Error as e:
-        
-        print(f"Erro ao alterar o status da mesa {mesa_id}: {e}")
+        print(f"[atualizar_status_mesa] Erro ao acessar o banco de dados: {e}")
         return False
 
     finally:
-        
+        # Fecha o cursor e a conexão
         if 'cursor' in locals():
             cursor.close()
         if 'conn' in locals():
-            conn.close()   
+            conn.close()
+  

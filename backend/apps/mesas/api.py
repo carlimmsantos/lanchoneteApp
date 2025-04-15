@@ -31,10 +31,10 @@ def get_mesa(request, id: int):
     return get_object_or_404(Mesa, pk=id)
 
 @mesa_router.put('/mesa/{id}/', response=MesaSchema)
-def put_mesa(request, id: int, mesa: MesaSchema):
+def put_mesa(request, id: int, data_mesa: MesaSchema):
     mesa = get_object_or_404(Mesa, pk=id)
-    mesa.numero = mesa.numero
-    mesa.status = mesa.status
+    mesa.numero = data_mesa.numero
+    mesa.status = data_mesa.status
     mesa.save()
     return mesa
 

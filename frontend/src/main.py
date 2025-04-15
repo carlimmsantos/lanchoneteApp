@@ -1,5 +1,5 @@
 import flet as ft
-from utils.mesas import get_mesas, create_mesa, delete_mesa, alterar_mesa_status
+from utils.mesas import get_mesas, create_mesa, delete_mesa, atualizar_mesa, atualizar_status_mesa
 from utils.produtos import get_produtos, create_produto, delete_produto, update_produto
 from utils.pedidos import create_pedido, get_pedidos_por_mesa, apagar_pedidos_mesa, update_pedido
 
@@ -262,6 +262,8 @@ def main(page: ft.Page):
         lista_mesas = sorted(get_mesas(), key=lambda mesa: mesa['numero'])
 
         for mesa in lista_mesas:
+            
+             
             mesa_component = ft.Container(
                 content=ft.ListTile(
                     title=ft.Row(
@@ -302,8 +304,10 @@ def main(page: ft.Page):
                             ft.PopupMenuItem(
                                 text="Adicionar Pedido",
                                 icon=ft.Icons.ADD,
-                                on_click=lambda e, mesa_id=mesa["id"]: adicionar_pedido(
-                                    mesa_id
+                                on_click=lambda e, mesa_id=mesa["id"], numero_mesa = mesa["numero"]: adicionar_pedido(
+                                    mesa_id,
+                                    numero_mesa
+                                
                                 ),
                             ),
                             ft.PopupMenuItem(
@@ -530,13 +534,15 @@ def main(page: ft.Page):
   
     #FUNÇÕES PEDIDOS
     
-    def adicionar_pedido(mesa_id):
+    
+    def adicionar_pedido(mesa_id, numero_mesa):
         page.open(bs_adicionar_pedido)
         page.mesa_id = mesa_id
+
         page.update()
-        alterar_mesa_status(mesa_id)
+        button_add_pedido.on_click = lambda e: finalizar_adicao_pedido(mesa_id, numero_mesa)
         atualizar_lista_mesas(layout_principal)
-        
+
     def atualizar_dropdown_produtos():
         lista_produtos = get_produtos()  
         add_list_produto.options = [
@@ -549,8 +555,10 @@ def main(page: ft.Page):
 
         print(f"Estou na {mesa_id}")
 
-        page.open(bs_pagamento)
+        page.close(bs_pagamento)
+        page.update()
 
+        page.open(bs_pagamento)
         page.update()
         
     def filtrar_produtos_combinados(nome_produto, preco_maximo):
@@ -597,17 +605,46 @@ def main(page: ft.Page):
                 bgcolor="white",
                 border=ft.border.all(1, "black"),
             )
-            produto_list.controls.append(produto_component)  # Adiciona o produto filtrado à lista
-        page.update()  # Atualiza a página para refletir as mudanças
+            produto_list.controls.append(produto_component) 
+        page.update() 
+
 
     def fechar_pedido(metodo_pagamento, mesa_id):
         print(f"Pedido fechado para a mesa {mesa_id} com método de pagamento: {metodo_pagamento}")
         
         apagar_pedidos_mesa(mesa_id)  
         atualizar_lista_mesas(layout_principal)
-        page.close(bs_pagamento)
         voltar()
 
+
+    def finalizar_adicao_pedido(mesa_id, numero_mesa):
+       
+        
+        quantidade_valor = quantidade.value
+        produto_nome = add_list_produto.value
+
+        # Verifica se os valores são válidos
+        if not quantidade_valor or not produto_nome:
+            print("[finalizar_adicao_pedido] Quantidade ou produto não selecionado.")
+            return
+
+        # Busca o ID do produto pelo nome
+        produto_id = buscar_id_produto_por_nome(produto_nome)
+        if produto_id is None:
+            print(f"[finalizar_adicao_pedido] Produto '{produto_nome}' não encontrado.")
+            return
+
+        
+        create_pedido(quantidade_valor, mesa_id, produto_id)
+
+        
+        page.close(bs_adicionar_pedido)
+
+        atualizar_status_mesa(mesa_id, numero_mesa)
+        
+        atualizar_lista_mesas(layout_principal)
+
+        page.update()
 
 
     # Criar um fundo com uma imagem
@@ -717,6 +754,9 @@ def main(page: ft.Page):
     on_change=lambda e: print(f"Produto selecionado: ID={add_list_produto.value}"),
     )
 
+
+
+    
     quantidade = ft.TextField(hint_text="Digite Quantidade:")
 
     # Lista de pedidos
