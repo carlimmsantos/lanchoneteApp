@@ -489,13 +489,17 @@ def main(page: ft.Page):
         elif event.control.selected_index == 1:  # Aba "Produtos"
             atualizar_lista_produtos()  # Atualiza a lista de produtos
             conteudo.content.controls.append(
-                campo_busca_produto_container,  # Adiciona o campo de busca por nome
-            )
-            conteudo.content.controls.append(
-                campo_busca_preco_container,  # Adiciona o campo de busca por preço
-            )
-            conteudo.content.controls.append(
-                button_add_produto_container,
+                ft.Column(
+                    controls=[
+                        campo_busca_produto_container,
+                        campo_busca_preco_container,
+                        button_add_produto_container,
+                       
+                    ],
+                    
+                    alignment=ft.MainAxisAlignment.START,
+                    )
+                
             )
             conteudo.content.controls.append(
                 ft.Container(
@@ -632,7 +636,10 @@ def main(page: ft.Page):
         if tipo_desconto != None:
             desconto_valor = valor_total
             valor_total = 0.0
-
+        
+        else :
+            tipo_desconto = "Nenhum"
+        
         
         create_relatorio(
             numero_mesa,
@@ -669,7 +676,7 @@ def main(page: ft.Page):
         create_pedido(quantidade_valor, mesa_id, produto_id)
 
         
-        page.close(bs_adicionar_pedido)
+        #page.close(bs_adicionar_pedido)
 
         atualizar_status_mesa(mesa_id, numero_mesa)
         
@@ -1008,6 +1015,7 @@ def main(page: ft.Page):
         label="Filtrar por Preço Máximo",
         bgcolor="white",
         color="black",
+        border_radius=15,
         width=400,
         keyboard_type=ft.KeyboardType.NUMBER,
         on_change=lambda e: atualizar_lista_produtos_filtrados_combinados(campo_busca_produto.value, e.control.value),
@@ -1016,13 +1024,14 @@ def main(page: ft.Page):
     campo_busca_preco_container = ft.Container(
         content=campo_busca_preco,
         alignment=ft.alignment.center,
-        padding=ft.padding.all(10),
+        padding=ft.padding.symmetric(horizontal=10)
     )
     
     campo_busca_produto = ft.TextField(
         label="Buscar Produto",
         bgcolor="white",
         color="black",
+        border_radius=15,
         width=400,
         on_change=lambda e: atualizar_lista_produtos_filtrados_combinados(e.control.value, campo_busca_preco.value),
     )
@@ -1030,7 +1039,7 @@ def main(page: ft.Page):
     campo_busca_produto_container = ft.Container(
         content=campo_busca_produto,
         alignment=ft.alignment.center,
-        padding=ft.padding.all(10),
+        padding=ft.padding.symmetric(horizontal=10)
     )
 
 
