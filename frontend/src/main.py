@@ -2,7 +2,7 @@ import flet as ft
 from utils.mesas import get_mesas, create_mesa, delete_mesa, atualizar_mesa, atualizar_status_mesa
 from utils.produtos import get_produtos, create_produto, delete_produto, update_produto
 from utils.pedidos import create_pedido, get_pedidos_por_mesa, apagar_pedidos_mesa, update_pedido, delete_pedido
-from utils.relatorios import create_relatorio, get_relatorios
+from utils.relatorios import create_relatorio, get_relatorios_view
 
 class App(ft.Column):
     def __init__(self):
@@ -709,7 +709,7 @@ def main(page: ft.Page):
     def atualizar_lista_relatorios():
         relatorio_list.controls.clear()
 
-        lista_relatorios = sorted(get_relatorios(), key=lambda relatorio: relatorio['numero_mesa'])
+        lista_relatorios = sorted(get_relatorios_view(), key=lambda relatorio: relatorio['numero_mesa'])
 
         for relatorio in lista_relatorios:
             

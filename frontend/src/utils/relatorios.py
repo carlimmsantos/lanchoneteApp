@@ -1,7 +1,41 @@
 import requests
-
+import psycopg2
 
 BASE_URL = "http://127.0.0.1:8000/relatorios"
+
+
+def get_relatorios_view():
+    try:
+       
+        conn = psycopg2.connect(
+            dbname="Gerencia",
+            user="postgres",
+            password="santos2018",
+            host="localhost",
+            port="5432"
+        )
+        cursor = conn.cursor()
+
+        
+        query = "SELECT * FROM relatorios_view;"
+        cursor.execute(query)
+
+        
+        colunas = [desc[0] for desc in cursor.description]
+        resultados = [dict(zip(colunas, row)) for row in cursor.fetchall()]
+
+       
+        cursor.close()
+        conn.close()
+
+        return resultados
+
+    except Exception as e:
+        print(f"Erro ao consultar a view 'relatorios_view': {e}")
+        return []
+
+
+
 
 def get_relatorios():
     try:
