@@ -7,6 +7,9 @@ class Relatorio(models.Model):
 
     numero_mesa = models.IntegerField()
     data_hora = models.DateTimeField(auto_now_add=True)
+    tipo_desconto = models.CharField(max_length=50, default='Nenhum')
+    tipo_pagamento = models.CharField(max_length=50)
+    desconto = models.DecimalField(max_digits=5, decimal_places=2, default=0.00)
     valor_total = models.DecimalField(max_digits=10, decimal_places=2)
     quantidade_pedidos = models.IntegerField()
     

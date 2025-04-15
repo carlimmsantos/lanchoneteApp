@@ -2,7 +2,7 @@ import flet as ft
 from utils.mesas import get_mesas, create_mesa, delete_mesa, atualizar_mesa, atualizar_status_mesa
 from utils.produtos import get_produtos, create_produto, delete_produto, update_produto
 from utils.pedidos import create_pedido, get_pedidos_por_mesa, apagar_pedidos_mesa, update_pedido, delete_pedido
-
+from utils.relatorios import create_relatorio
 
 class App(ft.Column):
     def __init__(self):
@@ -145,7 +145,7 @@ def main(page: ft.Page):
             "Pagamentos",
             bgcolor="green",
             color="white",
-            on_click=lambda e: pagamento_pedido(mesa_id),
+            on_click=lambda e: pagamento_pedido(mesa_id, valor_total, numeracao_mesa),
         )
 
         
@@ -557,8 +557,10 @@ def main(page: ft.Page):
         ]
         page.update()  
     
-    def pagamento_pedido(mesa_id):
+    def pagamento_pedido(mesa_id, valor_total, numeracao_mesa):
         page.mesa_id_pagamento = mesa_id
+        page.valor_total_pago = valor_total
+        page.numero_mesa_atual = numeracao_mesa
 
         print(f"Estou na {mesa_id}")
 
@@ -616,9 +618,26 @@ def main(page: ft.Page):
         page.update() 
 
 
-    def fechar_pedido(metodo_pagamento, mesa_id):
-        print(f"Pedido fechado para a mesa {mesa_id} com método de pagamento: {metodo_pagamento}")
+    def fechar_pedido(mesa_id, numero_mesa, tipo_desconto, metodo_pagamento, valor_total):
+
+        quantidade_pedidos = len(get_pedidos_por_mesa(mesa_id))
         
+        desconto_valor = 0.0
+
+        if tipo_desconto != None:
+            desconto_valor = valor_total
+            valor_total = 0.0
+
+        
+        create_relatorio(
+            numero_mesa,
+            tipo_desconto,
+            metodo_pagamento,
+            desconto_valor,
+            valor_total,
+            quantidade_pedidos,
+        )
+
         apagar_pedidos_mesa(mesa_id)  
         atualizar_lista_mesas(layout_principal)
         voltar()
@@ -809,7 +828,7 @@ def main(page: ft.Page):
                         "Fechar Pedido",
                         bgcolor="green", 
                         color="white", 
-                        on_click=lambda e: fechar_pedido(add_list_pagamento.value, page.mesa_id_pagamento),
+                        on_click=lambda e: fechar_pedido(page.mesa_id_pagamento, page.numero_mesa_atual, add_list_desconto.value, add_list_pagamento.value, page.valor_total_pago),
             )],
             ),
         ),

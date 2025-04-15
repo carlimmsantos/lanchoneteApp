@@ -1,6 +1,6 @@
 from ninja import Router
 from ninja import ModelSchema, Schema
-from .models import Pedido
+from .models import Relatorio
 from django.http import JsonResponse
 from typing import Optional, List
 from django.shortcuts import get_object_or_404
@@ -12,7 +12,7 @@ relatorio_router = Router()
 class RelatorioSchema(ModelSchema):
     class Config:
         model = Relatorio
-        model_fields = ['id', 'numero_mesa', 'data_hora', 'valor_total', 'quantidade_pedidos'] 
+        model_fields = [ 'numero_mesa', 'tipo_desconto', 'tipo_pagamento', 'desconto', 'valor_total', 'quantidade_pedidos'] 
     
 
 @relatorio_router.post('/relatorio/', response=RelatorioSchema)
@@ -20,7 +20,9 @@ def post_relatorio(request, relatorio_data: RelatorioSchema):
     
     novo_relatorio = Relatorio(
         numero_mesa = relatorio_data.numero_mesa, 
-        data_hora = relatorio_data.data_hora,
+        tipo_pagamento = relatorio_data.tipo_pagamento,
+        tipo_desconto = relatorio_data.tipo_desconto,
+        desconto = relatorio_data.desconto,
         valor_total = relatorio_data.valor_total,
         quantidade_pedidos = relatorio_data.quantidade_pedidos
     )
@@ -43,6 +45,9 @@ def update_relatorio(request, id: int, relatorio_data: RelatorioSchema):
 
     relatorio.numero_mesa = relatorio_data.numero_mesa
     relatorio.data_hora = relatorio_data.data_hora
+    relatorio.tipo_pagamento = relatorio_data.tipo_pagamento
+    relatorio.tipo_desconto = relatorio_data.tipo_desconto
+    relatorio.desconto = relatorio_data.desconto
     relatorio.valor_total = relatorio_data.valor_total
     relatorio.quantidade_pedidos = relatorio_data.quantidade_pedidos
     
