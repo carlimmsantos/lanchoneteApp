@@ -33,9 +33,9 @@ def get_pedidos_por_mesa(mesa_id):
     try:
         # Conexão com o banco de dados
         conn = psycopg2.connect(
-            dbname="Gerencia",
+            dbname="gerencia",
             user="postgres",
-            password="santos2018",
+            password="0121",
             host="localhost",
             port="5432"
         )
@@ -72,9 +72,9 @@ def apagar_pedidos_mesa(mesa_id):
     try:
         # Conexão com o banco de dados
         conn = psycopg2.connect(
-            dbname="Gerencia",
+            dbname="gerencia",
             user="postgres",
-            password="santos2018",
+            password="0121",
             host="localhost",
             port="5432"
         )

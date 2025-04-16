@@ -8,9 +8,9 @@ def get_relatorios_view():
     try:
        
         conn = psycopg2.connect(
-            dbname="Gerencia",
+            dbname="gerencia",
             user="postgres",
-            password="santos2018",
+            password="0121",
             host="localhost",
             port="5432"
         )
