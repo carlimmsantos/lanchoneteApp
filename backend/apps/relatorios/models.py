@@ -5,6 +5,7 @@ from django.db import models
 class Relatorio(models.Model):
     id = models.AutoField(primary_key=True)
 
+    nome_usuario = models.CharField(max_length=100)
     numero_mesa = models.IntegerField()
     data_hora = models.DateTimeField(auto_now_add=True)
     tipo_desconto = models.CharField(max_length=50, default='Nenhum')
