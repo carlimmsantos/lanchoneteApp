@@ -788,7 +788,9 @@ def main(page: ft.Page):
         relatorio_list.controls.clear()
 
         lista_relatorios = sorted(get_relatorios_view(), key=lambda relatorio: relatorio['numero_mesa'])
-
+        print(lista_relatorios[0])
+        print(lista_relatorios[0]["data_hora"])
+      
         for relatorio in lista_relatorios:
             
             relatorio_component = ft.Container(
@@ -809,6 +811,7 @@ def main(page: ft.Page):
                                     color="black",
                                     weight=ft.FontWeight.BOLD,
                                 ),
+
                             ],
                             alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
                         ),
@@ -821,6 +824,8 @@ def main(page: ft.Page):
                         ft.Text(f"Tipo de Desconto: {relatorio['tipo_desconto']}", size=12, color="black"),
                         ft.Text(f"Forma de Pagamento: {relatorio['tipo_pagamento']}", size=12, color="black"),
                         ft.Text(f"Quantidade de Pedidos: {relatorio['quantidade_pedidos']}", size=12, color="black"),
+                        ft.Text(f"Data: {relatorio["data_hora"].strftime("%d/%m/%Y")}", size=12, color="black"),
+                        ft.Text(f"Horario: {relatorio['data_hora'].strftime("%H:%M:%S")}", size=12, color="black"),
                     ],
                     spacing=5, 
                 ),
@@ -851,14 +856,15 @@ def main(page: ft.Page):
             return False
 
     # Função para adicionar um novo usuário
-    def adicionar_usuario(nome, senha):
+    def adicionar_usuario(nome, senha, cargo):
         try:
             print(get_usuarios())
             if not verificar_usuario(nome, senha):
-                if create_usuario(nome, senha):
+                if create_usuario(nome, senha, cargo):
                     print(f"Usuario {nome} criado com sucesso!")
                     nomeUsuario_field.value = ""
                     senhaUsuario_field.value = ""
+                    add_list_usuario.value = ""
                     page.update()
                 else:
                     print("Erro ao criar o usuario.")
@@ -1087,6 +1093,14 @@ def main(page: ft.Page):
         ],
     )
 
+    add_list_usuario = ft.Dropdown(
+        width=200,
+        options=[
+            ft.dropdown.Option("Gerente"),
+            ft.dropdown.Option("Funcionario"),
+        ],
+    )
+
     add_list_produto = ft.Dropdown(
         width=200,
         options=[
@@ -1109,7 +1123,7 @@ def main(page: ft.Page):
         text="Adicionar Usuario",
         bgcolor="green",
         color="white",
-        on_click=lambda e: page.open(bs_usuario),
+        on_click=lambda e: page.open(bs_usuario) if permissao_usuario(page.permissao) else criar_tela_login(),
     )
 
     # Container para o botão de adicionar produto
@@ -1161,8 +1175,9 @@ def main(page: ft.Page):
                 controls=[
                     nomeUsuario_field,
                     senhaUsuario_field,
+                    add_list_usuario,
                     ft.ElevatedButton("Cadastrar Usuario",
-                    on_click=lambda e: adicionar_usuario(nomeUsuario_field.value, senhaUsuario_field.value)),
+                    on_click=lambda e: adicionar_usuario(nomeUsuario_field.value, senhaUsuario_field.value, add_list_usuario.value)),
                 ],
             ),
         ),
