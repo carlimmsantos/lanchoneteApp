@@ -3,13 +3,13 @@ import psycopg2
 
 BASE_URL = "http://127.0.0.1:8000/usuarios"
 
-def create_usuario(nome, senha):
+def create_usuario(nome, senha, cargo):
     try:
         response = requests.post(f"{BASE_URL}/usuario/", 
         json={"nome": nome,
               "apelido": nome,
                "senha": senha,
-               "cargo": "Funcionario",})
+               "cargo": cargo,})
         response.raise_for_status()
         return response.json()
     except requests.exceptions.RequestException as e:
