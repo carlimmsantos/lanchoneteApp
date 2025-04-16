@@ -141,6 +141,14 @@ def main(page: ft.Page):
                     ft.Column(
                         controls=[
                             button_add_usuario,
+                            ft.TextField(
+                                label="Faturamento Total",
+                                value=f"R$ {page.valor_relatorio:.2f}",
+                                width=400,
+                                bgcolor="white",
+                                color="black",
+                                border_radius=15,
+                            ),
                         ],
                         
                         alignment=ft.MainAxisAlignment.END,
@@ -166,7 +174,7 @@ def main(page: ft.Page):
                                 color="black",
                             )
                         ],
-                        alignment=ft.MainAxisAlignment.CENTER,  # Centraliza o texto na linha
+                        alignment=ft.MainAxisAlignment.CENTER,  
                     ),
                     padding=10,
                     margin=3,
@@ -178,6 +186,7 @@ def main(page: ft.Page):
 
         
         page.update()
+
 
     # -----------------Funções de gerenciamento de mesas------------------
 
@@ -531,6 +540,10 @@ def main(page: ft.Page):
     def fechar_pedido(mesa_id, numero_mesa, tipo_desconto, metodo_pagamento, valor_total):
 
         quantidade_pedidos = len(get_pedidos_por_mesa(mesa_id))
+
+        add_list_desconto.value = ""
+        add_list_pagamento.value = ""  
+
         
         print(f"Quantidade de pedidos: {quantidade_pedidos}")
 
@@ -629,7 +642,8 @@ def main(page: ft.Page):
                 nome_field.value = ""
                 preco_field.value = ""
                 page.update()
-                
+
+                    
             else:
                 print("Erro ao criar o produto.")
         except ValueError:
@@ -802,9 +816,15 @@ def main(page: ft.Page):
         relatorio_list.controls.clear()
 
         lista_relatorios = sorted(get_relatorios_view(), key=lambda relatorio: relatorio['numero_mesa'])
-      
+
+        total_valor = 0.0
+
+
         for relatorio in lista_relatorios:
             
+            total_valor += float(relatorio['valor_total'])
+
+
             relatorio_component = ft.Container(
             content=ft.ListTile(
                 title=ft.Column(
@@ -851,7 +871,9 @@ def main(page: ft.Page):
         )
             relatorio_list.controls.append(relatorio_component)
 
+        page.valor_relatorio = total_valor
         page.update()
+        
 
 
 
@@ -1078,6 +1100,7 @@ def main(page: ft.Page):
         keyboard_type=ft.KeyboardType.NUMBER,
     )
 
+
     nomeUsuario_field = ft.TextField(
         label="Nome do Usuario",
         autofill_hints=ft.AutofillHint.NAME,
@@ -1102,7 +1125,7 @@ def main(page: ft.Page):
      )
 
     page.atual_usuario = "Visitante"
-    page.permissao = "Visitante"
+    page.permissao = "Gerente"
 
     add_list_pagamento = ft.Dropdown(
         width=200,
@@ -1373,8 +1396,7 @@ def main(page: ft.Page):
             expand=True,
         ),
     )
-
-    # Campo de busca para filtrar produtos por preço
+    
     campo_busca_preco = ft.TextField(
         label="Filtrar por Preço Máximo",
         bgcolor="white",
@@ -1448,8 +1470,4 @@ def main(page: ft.Page):
 
 ft.app(target=main)
 
-"""if __name__ == "__main__":
-    # Teste simples para verificar a função get_pedidos_por_mesa
-    mesa_id_teste = 1  # Substitua pelo ID de uma mesa existente no banco
-    pedidos = get_pedidos_por_mesa(mesa_id_teste)
-    print(f"Pedidos para a mesa {mesa_id_teste}: {pedidos}")"""
+
