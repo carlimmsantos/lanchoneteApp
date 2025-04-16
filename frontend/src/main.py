@@ -711,7 +711,7 @@ def main(page: ft.Page):
     # Função para filtrar produtos combinados
     def filtrar_produtos_combinados(nome_produto, preco_maximo):
         try:
-            preco_maximo = float(preco_maximo) if preco_maximo else float('inf')  # Define um valor infinito se o preço não for fornecido
+            preco_maximo = float(preco_maximo) if preco_maximo else float('inf')  
             lista_produtos = get_produtos()
             produtos_filtrados = [
                 p for p in lista_produtos
@@ -724,8 +724,8 @@ def main(page: ft.Page):
 
     # Função para atualizar a lista de produtos filtrados
     def atualizar_lista_produtos_filtrados_combinados(nome_produto, preco_maximo):
-        produto_list.controls.clear()  # Limpa a lista de produtos exibida
-        produtos_filtrados = filtrar_produtos_combinados(nome_produto, preco_maximo)  # Filtra os produtos
+        produto_list.controls.clear() 
+        produtos_filtrados = filtrar_produtos_combinados(nome_produto, preco_maximo)  
         for produto in produtos_filtrados:
             produto_component = ft.Container(
                 content=ft.ListTile(
@@ -897,6 +897,12 @@ def main(page: ft.Page):
         page.permissao = "Visitante"
         atualizar_lista_mesas(layout_principal)
         page.update()
+
+    def create_admin():
+        if len(get_usuarios()) == 0:
+            create_usuario("admin", "admin", "Gerente")
+            print("Usuario admin criado com sucesso!")
+        
 
     #-------------------------------Login---------------------------------------
     
@@ -1404,6 +1410,7 @@ def main(page: ft.Page):
     atualizar_dropdown_produtos()
     atualizar_lista_produtos()
     atualizar_lista_mesas(layout_principal)
+    create_admin()
     
     
     
