@@ -46,6 +46,15 @@ def main(page: ft.Page):
                                 size=12,
                                 color="black",
                             ),
+
+                            ft.ElevatedButton(
+                                    text="Login",
+                                    icon=ft.Icons.LOGIN,
+                                    bgcolor="green",
+                                    color="white",
+                                    on_click=lambda e: criar_tela_login(),
+                                        ),
+
                         ],
                         spacing=5,
                     ),
@@ -805,6 +814,132 @@ def main(page: ft.Page):
         except ValueError:
             print("Erro: O preço deve ser um número válido.")
     
+    #-------------------------------Login---------------------------------------
+
+    def login_usuario(nome, senha):
+        usuarios = get_usuarios()
+        usuario = next((u for u in usuarios if u['nome'] == nome and u['senha'] == senha), None)
+        
+        if usuario:
+            print(f"Login bem-sucedido para o usuário: {nome}")
+            page.views.append(ft.View("/home"))
+            page.update()
+        else:
+            print("Nome de usuário ou senha incorretos.")
+
+    def criar_tela_login():
+        """
+        Função para criar a tela de login.
+        """
+        # Plano de fundo da tela de login
+        fundo_login = ft.Container(
+            width=400,
+            height=800,
+            content=ft.Image(
+                src="image/background.png",
+                fit=ft.ImageFit.COVER,
+            ),
+        )
+
+        # Campos de entrada para nome de usuário e senha
+        campo_nome_usuario = ft.TextField(
+            label="Nome de Usuário",
+            width=300,
+            bgcolor="white",
+            color="black",
+            border_radius=15,
+        )
+
+        campo_senha_usuario = ft.TextField(
+            label="Senha",
+            width=300,
+            bgcolor="white",
+            color="black",
+            border_radius=15,
+            password=True,  # Oculta o texto digitado
+        )
+
+        # Botão para realizar o login
+        botao_login = ft.ElevatedButton(
+            text="Login",
+            bgcolor="green",
+            color="white",
+            on_click=lambda e: login_usuario(campo_nome_usuario.value, campo_senha_usuario.value),
+        )
+        botao_voltar = ft.ElevatedButton(
+            text="Voltar",
+            bgcolor="red",
+            color="white",
+            on_click=lambda e: voltar(),
+        )
+
+        # Cabeçalho da tela de login
+        cabecalho_login = ft.Container(
+            content=ft.Row(
+                controls=[
+                    ft.Image(
+                        src="image/Icon.png",
+                        fit=ft.ImageFit.COVER,
+                        width=100,
+                        height=100,
+                        border_radius=5,
+                    ),
+                    ft.Text(
+                        "Bem-vindo ao Restaurante Bom Sabor",
+                        size=16,
+                        weight=ft.FontWeight.BOLD,
+                        color="black",
+                    ),
+                ],
+                alignment=ft.MainAxisAlignment.CENTER,
+            ),
+            padding=10,
+            border_radius=20,
+            bgcolor="white",
+            width=400,
+            border=ft.border.all(1, "black"),
+            margin=5,
+        )
+
+        # Layout principal da tela de login
+        camada_login = ft.Container(
+            alignment=ft.alignment.top_center,
+            content=ft.Column(
+                controls=[
+                    cabecalho_login,
+                    campo_nome_usuario,
+                    campo_senha_usuario,
+                    botao_login,
+                    botao_voltar,
+                ],
+                alignment=ft.MainAxisAlignment.CENTER,
+                spacing=20,
+            ),
+            padding=20,
+        )
+        
+        
+        # Adiciona o plano de fundo e a camada ao Stack
+
+        
+
+        page.views.append(
+            ft.View(
+                "/login",
+                controls=[
+                    ft.Stack(
+                        controls=[
+                            fundo_login,  # Plano de fundo
+                            camada_login,  # Camada de conteúdo
+                        ],
+                        expand=True,
+                    )
+                ],
+            )
+        )
+
+        page.update()
+    page.update()
 
 
     fundo = ft.Container(
