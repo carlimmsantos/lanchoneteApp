@@ -367,6 +367,20 @@ def main(page: ft.Page):
     def adicionar_produto(nome, preco):
         try:
             preco = float(preco)  
+            if produto_existe(nome):
+                # Exibe um AlertDialog com a mensagem de erro
+                dialog = ft.AlertDialog(
+                    title=ft.Text("Erro"),
+                    content=ft.Text(f"O produto '{nome}' já existe."),
+                    actions=[
+                        ft.TextButton("Fechar", on_click=lambda e: fechar_dialog(dialog)),
+                    ],
+                )
+                page.overlay.append(dialog)
+                dialog.open = True
+                page.update()
+                return  # Não cria o produto se já existir
+        
             if create_produto(nome, preco):
                 print(f"Produto {nome} criado com sucesso!")
                 atualizar_lista_produtos()
@@ -439,6 +453,10 @@ def main(page: ft.Page):
         print(produto_id)
         if delete_produto(produto_id):
             atualizar_lista_produtos()
+
+    def produto_existe(nome_produto):
+        lista_produtos = get_produtos()
+        return any(produto['nome'].lower() == nome_produto.lower() for produto in lista_produtos)
 
     def abrir_editar_pedido(pedido_id, id_mesa, mesa_numero):
         
@@ -775,7 +793,29 @@ def main(page: ft.Page):
 
         page.update()
 
+    # Função para validar a quantidade
+    def validar_quantidade(event):
+        valor = event.control.value
+        if not valor.isdigit():  # Verifica se o valor contém apenas dígitos
+            event.control.error_text = "A quantidade deve ser um número."
+            event.control.value = ""
+        else:
+            event.control.error_text = None 
+        page.update()
 
+    # Função para validar o preço
+    def validar_preco(event):
+        valor = event.control.value
+        try:
+            if valor:  # Verifica se o campo não está vazio
+                float(valor)  # Tenta converter o valor para float
+                event.control.error_text = None  # Remove o erro se a entrada for válida
+            else:
+                event.control.error_text = None  # Remove o erro se o campo estiver vazio
+        except ValueError:
+            event.control.error_text = "O preço deve ser um número válido."
+            event.control.value = ""  # Limpa o campo se a entrada for inválida
+        page.update()
 
     # Criar um fundo com uma imagem
     fundo = ft.Container(
@@ -892,7 +932,11 @@ def main(page: ft.Page):
 
 
     
-    quantidade = ft.TextField(hint_text="Digite Quantidade:")
+    quantidade = ft.TextField(
+        hint_text="Digite Quantidade:",
+        keyboard_type=ft.KeyboardType.NUMBER,  # Define o teclado numérico
+        on_change=lambda e: validar_quantidade(e),
+    )
 
     # Lista de pedidos
     pedidos_list = ft.Column(
@@ -1057,7 +1101,7 @@ def main(page: ft.Page):
         border_radius=15,
         width=400,
         keyboard_type=ft.KeyboardType.NUMBER,
-        on_change=lambda e: atualizar_lista_produtos_filtrados_combinados(campo_busca_produto.value, e.control.value),
+        on_change=lambda e:atualizar_lista_produtos_filtrados_combinados(campo_busca_produto.value, e.control.value),
     )
 
     campo_busca_preco_container = ft.Container(
