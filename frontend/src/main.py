@@ -1,8 +1,9 @@
 import flet as ft
-from utils.mesas import get_mesas, create_mesa, delete_mesa, atualizar_mesa, atualizar_status_mesa
+from utils.mesas import get_mesas, create_mesa, delete_mesa, atualizar_status_mesa
 from utils.produtos import get_produtos, create_produto, delete_produto, update_produto
 from utils.pedidos import create_pedido, get_pedidos_por_mesa, apagar_pedidos_mesa, update_pedido, delete_pedido
 from utils.relatorios import create_relatorio, get_relatorios_view
+from utils.usuarios import get_usuarios, create_usuario, delete_usuario
 
 class App(ft.Column):
     def __init__(self):
@@ -109,6 +110,17 @@ def main(page: ft.Page):
         
         elif event.control.selected_index == 2: 
             atualizar_lista_relatorios()
+            conteudo.content.controls.append(
+                ft.Column(
+                    controls=[
+                        button_add_usuario,
+                    ],
+                    
+                    alignment=ft.MainAxisAlignment.END,
+                    )
+                
+            )
+
             conteudo.content.controls.append(
                 ft.Container(
                     content=relatorio_list,
@@ -719,7 +731,7 @@ def main(page: ft.Page):
             atualizar_lista_produtos()
 
 
-#-----------------Funções de gerenciamento de relatórios------------------
+    #-----------------Funções de gerenciamento de relatórios------------------
 
     # Função para atualizar a lista de relatórios
     def atualizar_lista_relatorios():
@@ -775,7 +787,24 @@ def main(page: ft.Page):
 
 
 
+    #-------------------------Funções de Usuario------------------------------
 
+    # Função para adicionar um novo usuário
+    def adicionar_usuario(nome, senha):
+        try:
+            print(get_usuarios())
+            if nome not in [usuario['nome'] for usuario in get_usuarios()]:
+                if create_usuario(nome, senha):
+                    print(f"Usuario {nome} criado com sucesso!")
+                    nomeUsuario_field.value = ""
+                    senhaUsuario_field.value = ""
+                    page.update()
+                else:
+                    print("Erro ao criar o usuario.")
+
+        except ValueError:
+            print("Erro: O preço deve ser um número válido.")
+    
 
 
     fundo = ft.Container(
@@ -796,6 +825,17 @@ def main(page: ft.Page):
     preco_field = ft.TextField(
         label="Preço",
         keyboard_type=ft.KeyboardType.NUMBER,
+    )
+
+    nomeUsuario_field = ft.TextField(
+        label="Nome do Usuario",
+        autofill_hints=ft.AutofillHint.NAME,
+    )
+
+    senhaUsuario_field = ft.TextField(
+        label="Senha do Usuario",
+        keyboard_type=ft.KeyboardType.TEXT,
+        password=True,
     )
 
     quantidade_field = ft.TextField(
@@ -845,6 +885,14 @@ def main(page: ft.Page):
         on_click=lambda e: page.open(bs),
     )
 
+    #Botão para adicionar produto
+    button_add_usuario = ft.ElevatedButton(
+        text="Adicionar Usuario",
+        bgcolor="green",
+        color="white",
+        on_click=lambda e: page.open(bs_usuario),
+    )
+
     # Container para o botão de adicionar produto
     button_add_produto_container = ft.Row(
         controls=[button_add_produto],
@@ -870,10 +918,6 @@ def main(page: ft.Page):
         text="Adicionar no pedido", 
         on_click=lambda e: create_pedido(quantidade.value, page.mesa_id, buscar_id_produto_por_nome(add_list_produto.value)),)
     
-
-
-
-
     
     bs = ft.BottomSheet(
         content=ft.Container(
@@ -890,6 +934,20 @@ def main(page: ft.Page):
         ),
     )
 
+    bs_usuario = ft.BottomSheet(
+        content=ft.Container(
+            padding=50,
+            content=ft.Column(
+                tight=True,
+                controls=[
+                    nomeUsuario_field,
+                    senhaUsuario_field,
+                    ft.ElevatedButton("Cadastrar Usuario",
+                    on_click=lambda e: adicionar_usuario(nomeUsuario_field.value, senhaUsuario_field.value)),
+                ],
+            ),
+        ),
+    )
     
     bs_editar = ft.BottomSheet(
         content=ft.Container(
@@ -978,7 +1036,6 @@ def main(page: ft.Page):
     )
 
     
-   
 
     relatorio_list = ft.Column(
             scroll=ft.ScrollMode.ALWAYS,  
