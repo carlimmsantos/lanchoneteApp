@@ -532,6 +532,8 @@ def main(page: ft.Page):
 
         quantidade_pedidos = len(get_pedidos_por_mesa(mesa_id))
         
+        print(f"Quantidade de pedidos: {quantidade_pedidos}")
+
         desconto_valor = 0.0
 
         if tipo_desconto != None:
@@ -543,6 +545,7 @@ def main(page: ft.Page):
         
         
         create_relatorio(
+            page.atual_usuario,
             numero_mesa,
             tipo_desconto,
             metodo_pagamento,
@@ -780,6 +783,17 @@ def main(page: ft.Page):
         if delete_produto(produto_id):
             atualizar_lista_produtos()
 
+    # Função para validar a quantidade
+    def validar_quantidade(event):
+         valor = event.control.value
+         if not valor.isdigit(): 
+             event.control.error_text = "A quantidade deve ser um número."
+             event.control.value = ""
+         else:
+             event.control.error_text = None 
+         page.update()
+
+
 
     #-----------------Funções de gerenciamento de relatórios------------------
 
@@ -788,8 +802,6 @@ def main(page: ft.Page):
         relatorio_list.controls.clear()
 
         lista_relatorios = sorted(get_relatorios_view(), key=lambda relatorio: relatorio['numero_mesa'])
-        print(lista_relatorios[0])
-        print(lista_relatorios[0]["data_hora"])
       
         for relatorio in lista_relatorios:
             
@@ -1082,7 +1094,12 @@ def main(page: ft.Page):
         keyboard_type=ft.KeyboardType.NUMBER,
         on_change=lambda e: setattr(page, "quantidade", e.control.value),)
 
-    quantidade = ft.TextField(hint_text="Digite Quantidade:")
+    
+    quantidade = ft.TextField(
+         hint_text="Digite Quantidade:",
+         keyboard_type=ft.KeyboardType.NUMBER,
+         on_change=lambda e: validar_quantidade(e),
+     )
 
     page.atual_usuario = "Visitante"
     page.permissao = "Visitante"
