@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'apps.mesas',
     'apps.pedidos',
     'apps.relatorios',
+    'apps.usuarios',
 ]
 
 
