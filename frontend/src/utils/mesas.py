@@ -85,4 +85,36 @@ def atualizar_status_mesa(mesa_id, numero):
             cursor.close()
         if 'conn' in locals():
             conn.close()
-  
+
+def get_mesas_com_pedidos():
+    try:
+        conn = psycopg2.connect(
+            dbname="Gerencia",
+            user="postgres",
+            password="santos2018",  # Substitua pela sua senha
+            host="localhost",
+            port="5432"
+        )
+        cursor = conn.cursor()
+
+        # Consulta à view
+        query = "SELECT mesa_id, mesa_numero, mesa_status, total_pedidos FROM mesas_com_pedidos;"
+        cursor.execute(query)
+
+        # Recupera os resultados
+        colunas = [desc[0] for desc in cursor.description]
+        resultados = [dict(zip(colunas, row)) for row in cursor.fetchall()]
+
+        return resultados
+
+    except psycopg2.Error as e:
+        print(f"Erro ao consultar a view 'mesas_com_pedidos': {e}")
+        return []
+
+    finally:
+        # Fecha o cursor e a conexão
+        if 'cursor' in locals():
+            cursor.close()
+        if 'conn' in locals():
+            conn.close()
+    

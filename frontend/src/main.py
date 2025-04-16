@@ -1,5 +1,5 @@
 import flet as ft
-from utils.mesas import get_mesas, create_mesa, delete_mesa, atualizar_status_mesa
+from utils.mesas import get_mesas, create_mesa, delete_mesa, atualizar_status_mesa, get_mesas_com_pedidos
 from utils.produtos import get_produtos, create_produto, delete_produto, update_produto
 from utils.pedidos import create_pedido, get_pedidos_por_mesa, apagar_pedidos_mesa, update_pedido, delete_pedido
 from utils.relatorios import create_relatorio, get_relatorios_view
@@ -138,22 +138,23 @@ def main(page: ft.Page):
                 
                 atualizar_lista_relatorios()
                 conteudo.content.controls.append(
-                    ft.Column(
-                        controls=[
-                            button_add_usuario,
-                            ft.TextField(
-                                label="Faturamento Total",
-                                value=f"R$ {page.valor_relatorio:.2f}",
-                                width=400,
-                                bgcolor="white",
-                                color="black",
-                                border_radius=15,
-                            ),
-                        ],
-                        
-                        alignment=ft.MainAxisAlignment.END,
-                        )
-                    
+                    ft.Container(
+                        content=ft.Row(
+                            controls=[
+                                button_add_usuario,
+                                ft.Text(
+                                    f"Relatório Total: R$ {page.valor_relatorio:.2f}",
+                                    size=16, color="black"),
+                                
+                            ],
+                            alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
+                        ),
+                        padding=10,  
+                        margin=3, 
+                        border_radius=10,  
+                        bgcolor="white",  
+                        border=ft.border.all(1, "black"),  
+                    )
                 )
 
                 conteudo.content.controls.append(
@@ -205,12 +206,13 @@ def main(page: ft.Page):
     def atualizar_lista_mesas(layout_principal):
 
         numero_mesa = len(get_mesas())
-
+    
+    
         header = criar_header(numero_mesa)
         layout_principal.controls[0] = header
 
         mesa_list.controls.clear()
-        lista_mesas = sorted(get_mesas(), key=lambda mesa: mesa['numero'])
+        lista_mesas = sorted(get_mesas_com_pedidos(), key=lambda mesa: mesa['mesa_numero'])
 
         for mesa in lista_mesas:
             
@@ -219,48 +221,60 @@ def main(page: ft.Page):
                 content=ft.ListTile(
 
                     title=ft.Container(
-                    content=ft.Row(
+                        content=ft.Column(  
                         controls=[
-                            ft.Text(
-                                f"Mesa {mesa['numero']:02d}",
-                                size=21,
-                                weight=ft.FontWeight.BOLD,
+                            ft.Row(
+                                controls=[
+                                    ft.Text(
+                                        f"Mesa {mesa['mesa_numero']:02d}",
+                                        size=21,
+                                        weight=ft.FontWeight.BOLD,
+                                        color="black",
+                                    ),
+                                    ft.Container(expand=True),
+                                    ft.Container(
+                                        content=ft.Text(
+                                            f"{'Disponível' if mesa['mesa_status'] else 'Indisponível'}",
+                                            size=16,
+                                            weight=ft.FontWeight.BOLD,
+                                            color="white",
+                                        ),
+                                        alignment=ft.alignment.center,
+                                        bgcolor="green" if mesa['mesa_status'] else "red",
+                                        padding=ft.padding.symmetric(vertical=5),
+                                        border_radius=30,
+                                        width=130,
+                                    ),
+                                ],
+                                alignment=ft.MainAxisAlignment.END,
+                            ),
+                            ft.Text(  
+                                f"Pedidos: {mesa['total_pedidos']}",
+                                size=16,
                                 color="black",
                             ),
-                            ft.Container(expand=True),
-                            
-                            ft.Container(
-                                content=ft.Text(
-                                    f"{'Disponível' if mesa['status'] else 'Indisponível'}",
-                                    size=16,
-                                    weight=ft.FontWeight.BOLD,
-                                    color="white",
-                                ),
-                                alignment=ft.alignment.center,
-                                bgcolor="green" if mesa['status'] else "red",
-                                padding=ft.padding.symmetric(vertical=5),
-                                border_radius=30,
-                                width=130,
-                            )
                         ],
-                        alignment=ft.MainAxisAlignment.END,
+                        spacing=5,  
                     ),
                     padding=ft.padding.only(bottom=60),
                 ),
+                    
 
                     
                 subtitle= ft.Row(
                     controls=[
-
+                        
+                      
                         ft.Row(
                                 controls=[
+                                    
                                         
                                     ft.ElevatedButton(
                                         text="Adicionar",
                                         icon=ft.Icons.ADD,
                                         bgcolor="green",
                                         color="white",
-                                        on_click=lambda e, mesa_id=mesa["id"], numero_mesa=mesa["numero"]: adicionar_pedido(
+                                        on_click=lambda e, mesa_id=mesa["mesa_id"], numero_mesa=mesa["mesa_numero"]: adicionar_pedido(
                                             mesa_id, numero_mesa
                                             )
                                             if permissao_usuario(page.permissao) else criar_tela_login(),
@@ -271,7 +285,7 @@ def main(page: ft.Page):
                                         icon=ft.Icons.LIST,
                                         bgcolor="blue",
                                         color="white",
-                                        on_click=lambda e, mesa_id=mesa["id"], numero_mesa=mesa["numero"]: exibir_pedidos(
+                                        on_click=lambda e, mesa_id=mesa["mesa_id"], numero_mesa=mesa["mesa_numero"]: exibir_pedidos(
                                                 mesa_id, numero_mesa
                                             )
                                             if permissao_usuario(page.permissao) else criar_tela_login(),
@@ -281,7 +295,7 @@ def main(page: ft.Page):
                                         icon=ft.Icons.DELETE,
                                         bgcolor="red",
                                         color="white",
-                                        on_click=lambda e, mesa_id=mesa["id"]: excluir_mesa(mesa_id) if permissao_usuario(page.permissao) else criar_tela_login(),
+                                        on_click=lambda e, mesa_id=mesa["mesa_id"]: excluir_mesa(mesa_id) if permissao_usuario(page.permissao) else criar_tela_login(),
                                         ),
                                     ],
                                 
@@ -875,8 +889,6 @@ def main(page: ft.Page):
         page.update()
         
 
-
-
     #-------------------------Funções de Usuario------------------------------
 
     # Função para ver se o usuário existe
@@ -1090,6 +1102,10 @@ def main(page: ft.Page):
     )
     
     
+
+
+
+
     nome_field = ft.TextField(
         label="Nome do Produto",
         autofill_hints=ft.AutofillHint.NAME,
@@ -1143,6 +1159,7 @@ def main(page: ft.Page):
     add_list_desconto = ft.Dropdown(
         width=200,  
         options=[
+            ft.dropdown.Option("Nenhum"),
             ft.dropdown.Option("Flamengo"),
             ft.dropdown.Option("One Piece"),
             ft.dropdown.Option("Sousa"),
