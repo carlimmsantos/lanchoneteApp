@@ -36,7 +36,7 @@ def main(page: ft.Page):
                     ft.Column(
                         [
                             ft.Text(
-                                'Bem vindo, Administrador',
+                                f"Bem vindo, {page.atual_usuario}",
                                 size=14,
                                 weight=ft.FontWeight.BOLD,
                                 color="black",
@@ -46,14 +46,28 @@ def main(page: ft.Page):
                                 size=12,
                                 color="black",
                             ),
+                            ft.Row(
+                                controls=[
+                                    ft.ElevatedButton(
+                                        text="Login",
+                                        icon=ft.Icons.LOGIN,
+                                        bgcolor="green",
+                                        color="white",
+                                        on_click=lambda e: criar_tela_login(),
+                                    ),
+                                    ft.ElevatedButton(
+                                        text="Sair",
+                                        icon=ft.Icons.LOGOUT,
+                                        bgcolor="red",
+                                        color="white",
+                                        on_click=lambda e: criar_visitante(),
+                                    ),
+                                ],
+                                alignment=ft.MainAxisAlignment.END,  
+                                spacing=10,  
+                            )
 
-                            ft.ElevatedButton(
-                                    text="Login",
-                                    icon=ft.Icons.LOGIN,
-                                    bgcolor="green",
-                                    color="white",
-                                    on_click=lambda e: criar_tela_login(),
-                                        ),
+                            
 
                         ],
                         spacing=5,
@@ -117,28 +131,52 @@ def main(page: ft.Page):
                 ),
             )
         
-        elif event.control.selected_index == 2: 
-            atualizar_lista_relatorios()
-            conteudo.content.controls.append(
-                ft.Column(
-                    controls=[
-                        button_add_usuario,
-                    ],
-                    
-                    alignment=ft.MainAxisAlignment.END,
-                    )
+        elif event.control.selected_index == 2:
+            page.update()
+            print (page.permissao)
+            if permissao_relatorio(page.permissao):
                 
-            )
+                atualizar_lista_relatorios()
+                conteudo.content.controls.append(
+                    ft.Column(
+                        controls=[
+                            button_add_usuario,
+                        ],
+                        
+                        alignment=ft.MainAxisAlignment.END,
+                        )
+                    
+                )
 
-            conteudo.content.controls.append(
+                conteudo.content.controls.append(
+                    ft.Container(
+                        content=relatorio_list,
+                        expand=True,
+                    ),
+                )
+            else:
+                conteudo.content.controls.append(
+                    
                 ft.Container(
-                    content=relatorio_list,
-                    expand=True,
-                ),
+                    content=ft.Row(
+                        controls=[
+                            ft.Text(
+                                "Acesso Restrito!",
+                                size=21,
+                                color="black",
+                            )
+                        ],
+                        alignment=ft.MainAxisAlignment.CENTER,  # Centraliza o texto na linha
+                    ),
+                    padding=10,
+                    margin=3,
+                    border_radius=10,
+                    bgcolor="white",
+                    border=ft.border.all(1, "black"),
+                )
             )
-            
 
-        # Atualiza a página para refletir as mudanças
+        
         page.update()
 
     # -----------------Funções de gerenciamento de mesas------------------
@@ -215,7 +253,9 @@ def main(page: ft.Page):
                                         color="white",
                                         on_click=lambda e, mesa_id=mesa["id"], numero_mesa=mesa["numero"]: adicionar_pedido(
                                             mesa_id, numero_mesa
-                                            ),
+                                            )
+                                            if permissao_usuario(page.permissao) else criar_tela_login(),
+                        
                                         ),
                                     ft.ElevatedButton(
                                         text="Ver Pedidos",
@@ -224,14 +264,15 @@ def main(page: ft.Page):
                                         color="white",
                                         on_click=lambda e, mesa_id=mesa["id"], numero_mesa=mesa["numero"]: exibir_pedidos(
                                                 mesa_id, numero_mesa
-                                            ),
+                                            )
+                                            if permissao_usuario(page.permissao) else criar_tela_login(),
                                         ),
                                     ft.ElevatedButton(
                                         text="Excluir",
                                         icon=ft.Icons.DELETE,
                                         bgcolor="red",
                                         color="white",
-                                        on_click=lambda e, mesa_id=mesa["id"]: excluir_mesa(mesa_id),
+                                        on_click=lambda e, mesa_id=mesa["id"]: excluir_mesa(mesa_id) if permissao_usuario(page.permissao) else criar_tela_login(),
                                         ),
                                     ],
                                 
@@ -648,12 +689,12 @@ def main(page: ft.Page):
                             ft.PopupMenuItem(
                                 text="Editar",
                                 icon=ft.Icons.EDIT,
-                                on_click=lambda e, produto_id=produto['id']: abrir_editar_produto(produto_id)
+                                on_click=lambda e, produto_id=produto['id']: abrir_editar_produto(produto_id) if permissao_usuario(page.permissao) else criar_tela_login()
                             ),
                             ft.PopupMenuItem(
                                 text="Excluir",
                                 icon=ft.Icons.DELETE,
-                                on_click=lambda e, produto_id=produto['id']: excluir_produto(produto_id)
+                                on_click=lambda e, produto_id=produto['id']: excluir_produto(produto_id) if permissao_usuario(page.permissao) else criar_tela_login()
                             )
                         ]
                     )
@@ -798,11 +839,22 @@ def main(page: ft.Page):
 
     #-------------------------Funções de Usuario------------------------------
 
+    # Função para ver se o usuário existe
+    def verificar_usuario(nome, senha):
+        usuarios = get_usuarios()
+        
+        usuario = next((u for u in usuarios if u['nome'] == nome and u['senha'] == senha), None)
+        
+        if usuario:
+            return True
+        else:
+            return False
+
     # Função para adicionar um novo usuário
     def adicionar_usuario(nome, senha):
         try:
             print(get_usuarios())
-            if nome not in [usuario['nome'] for usuario in get_usuarios()]:
+            if not verificar_usuario(nome, senha):
                 if create_usuario(nome, senha):
                     print(f"Usuario {nome} criado com sucesso!")
                     nomeUsuario_field.value = ""
@@ -813,20 +865,35 @@ def main(page: ft.Page):
 
         except ValueError:
             print("Erro: O preço deve ser um número válido.")
-    
-    #-------------------------------Login---------------------------------------
 
+    # Função para logar o usuário
     def login_usuario(nome, senha):
-        usuarios = get_usuarios()
-        usuario = next((u for u in usuarios if u['nome'] == nome and u['senha'] == senha), None)
-        
-        if usuario:
+        if verificar_usuario(nome, senha):
             print(f"Login bem-sucedido para o usuário: {nome}")
-            page.views.append(ft.View("/home"))
+            
+            lista_usuarios = get_usuarios()
+            usuario = next((u for u in lista_usuarios if u['nome'] == nome), None)
+            page.usuario_atual = usuario
+            page.atual_usuario = usuario['nome']
+            page.permissao = usuario['cargo']
+             
+            atualizar_lista_mesas(layout_principal)
+            voltar()
+
             page.update()
         else:
             print("Nome de usuário ou senha incorretos.")
+    
+    # Função para criar um visitante
+    def criar_visitante():
+        page.atual_usuario = "Visitante"
+        page.permissao = "Visitante"
+        atualizar_lista_mesas(layout_principal)
+        page.update()
 
+    #-------------------------------Login---------------------------------------
+
+    # Função para criar a tela de login
     def criar_tela_login():
         """
         Função para criar a tela de login.
@@ -939,7 +1006,22 @@ def main(page: ft.Page):
         )
 
         page.update()
-    page.update()
+    
+    # Funções para verificar a permissão do usuário
+    def permissao_usuario(cargo):
+        if cargo == "Gerente":
+            return True
+        elif cargo == "Funcionario":
+            return True
+        else:
+            return False
+
+    def permissao_relatorio(cargo):
+        if cargo == "Gerente":
+            return True
+        else:
+            return False
+
 
 
     fundo = ft.Container(
@@ -980,6 +1062,8 @@ def main(page: ft.Page):
 
     quantidade = ft.TextField(hint_text="Digite Quantidade:")
 
+    page.atual_usuario = "Visitante"
+    page.permissao = "Visitante"
 
     add_list_pagamento = ft.Dropdown(
         width=200,
@@ -1017,7 +1101,7 @@ def main(page: ft.Page):
         text="Adicionar Produto",
         bgcolor="green",
         color="white",
-        on_click=lambda e: page.open(bs),
+        on_click=lambda e: page.open(bs) if permissao_usuario(page.permissao) else criar_tela_login(),
     )
 
     #Botão para adicionar produto
@@ -1039,7 +1123,7 @@ def main(page: ft.Page):
         text="Adicionar Mesa",
         bgcolor="green",
         color="white",
-        on_click=lambda e: adicionar_mesa(),
+        on_click=lambda e: adicionar_mesa() if permissao_usuario(page.permissao) else criar_tela_login(),
     )
 
     # Container para o botão de adicionar mesa
