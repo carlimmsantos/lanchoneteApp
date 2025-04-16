@@ -820,6 +820,7 @@ def main(page: ft.Page):
                 ),
                 subtitle=ft.Column(
                     controls=[
+                        ft.Text(f"Responsavel: {relatorio['nome_usuario']}", size=14, color="black", weight=ft.FontWeight.BOLD),
                         ft.Text(f"Desconto: {relatorio['desconto']}", size=12, color="black"),
                         ft.Text(f"Tipo de Desconto: {relatorio['tipo_desconto']}", size=12, color="black"),
                         ft.Text(f"Forma de Pagamento: {relatorio['tipo_pagamento']}", size=12, color="black"),
@@ -917,7 +918,7 @@ def main(page: ft.Page):
         # Campos de entrada para nome de usuário e senha
         campo_nome_usuario = ft.TextField(
             label="Nome de Usuário",
-            width=300,
+            width=400,
             bgcolor="white",
             color="black",
             border_radius=15,
@@ -925,7 +926,7 @@ def main(page: ft.Page):
 
         campo_senha_usuario = ft.TextField(
             label="Senha",
-            width=300,
+            width=400,
             bgcolor="white",
             color="black",
             border_radius=15,
@@ -933,17 +934,25 @@ def main(page: ft.Page):
         )
 
         # Botão para realizar o login
-        botao_login = ft.ElevatedButton(
-            text="Login",
-            bgcolor="green",
-            color="white",
-            on_click=lambda e: login_usuario(campo_nome_usuario.value, campo_senha_usuario.value),
-        )
-        botao_voltar = ft.ElevatedButton(
-            text="Voltar",
-            bgcolor="red",
-            color="white",
-            on_click=lambda e: voltar(),
+        botoes_login = ft.Row(
+            controls=[
+                ft.ElevatedButton(
+                    text="Voltar",
+                    bgcolor="red",
+                    color="white",
+                    on_click=lambda e: voltar(),
+                ),
+
+                ft.ElevatedButton(
+                    text="Login",
+                    bgcolor="green",
+                    color="white",
+                    on_click=lambda e: login_usuario(campo_nome_usuario.value, campo_senha_usuario.value),
+                ),
+              
+            ],
+            alignment=ft.MainAxisAlignment.END,  # Espaça os botões uniformemente
+            spacing=20,  # Define o espaçamento entre os botões
         )
 
         # Cabeçalho da tela de login
@@ -982,8 +991,7 @@ def main(page: ft.Page):
                     cabecalho_login,
                     campo_nome_usuario,
                     campo_senha_usuario,
-                    botao_login,
-                    botao_voltar,
+                    botoes_login,
                 ],
                 alignment=ft.MainAxisAlignment.CENTER,
                 spacing=20,
@@ -1022,6 +1030,7 @@ def main(page: ft.Page):
         else:
             return False
 
+    # Função para verificar a permissão de relatório
     def permissao_relatorio(cargo):
         if cargo == "Gerente":
             return True
