@@ -56,15 +56,13 @@ def get_relatorio(relatorio_id):
         print(f"Erro ao buscar relatorio: {e}")
         return None
 
-def create_relatorio(usuario_nome, numero_mesa, tipo_desconto, tipo_pagamento, desconto, valor_total, quantidade_pedidos):
+def create_relatorio(numero_mesa, tipo_desconto, tipo_pagamento, desconto, valor_total, quantidade_pedidos):
     try:
         import json
 
-        
         response = requests.post(
             f"{BASE_URL}/relatorio/",
             json={
-                "nome_usuario": usuario_nome,
                 "numero_mesa": numero_mesa,
                 "tipo_desconto": tipo_desconto,
                 "tipo_pagamento": tipo_pagamento,

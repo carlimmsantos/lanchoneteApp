@@ -3,7 +3,7 @@ from utils.mesas import get_mesas, create_mesa, delete_mesa, atualizar_status_me
 from utils.produtos import get_produtos, create_produto, delete_produto, update_produto
 from utils.pedidos import create_pedido, get_pedidos_por_mesa, apagar_pedidos_mesa, update_pedido, delete_pedido
 from utils.relatorios import create_relatorio, get_relatorios_view
-from utils.usuarios import get_usuarios, create_usuario
+from utils.usuarios import get_usuarios, create_usuario, delete_usuario
 
 class App(ft.Column):
     def __init__(self):
@@ -637,9 +637,8 @@ def main(page: ft.Page):
         else :
             tipo_desconto = "Nenhum"
         
-       
+        
         create_relatorio(
-            page.atual_usuario,
             numero_mesa,
             tipo_desconto,
             metodo_pagamento,
@@ -975,7 +974,9 @@ def main(page: ft.Page):
         relatorio_list.controls.clear()
 
         lista_relatorios = sorted(get_relatorios_view(), key=lambda relatorio: relatorio['numero_mesa'])
-        
+        print(lista_relatorios[0])
+        print(lista_relatorios[0]["data_hora"])
+      
         for relatorio in lista_relatorios:
             
             relatorio_component = ft.Container(
@@ -1001,11 +1002,10 @@ def main(page: ft.Page):
                             alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
                         ),
                     ],
-                    spacing=30,  
+                    spacing=20,  
                 ),
                 subtitle=ft.Column(
                     controls=[
-                        ft.Text(f"Responsavel: {relatorio['nome_usuario']}", size=14, color="black", weight=ft.FontWeight.BOLD),
                         ft.Text(f"Desconto: {relatorio['desconto']}", size=12, color="black"),
                         ft.Text(f"Tipo de Desconto: {relatorio['tipo_desconto']}", size=12, color="black"),
                         ft.Text(f"Forma de Pagamento: {relatorio['tipo_pagamento']}", size=12, color="black"),
@@ -1083,13 +1083,6 @@ def main(page: ft.Page):
         atualizar_lista_mesas(layout_principal)
         page.update()
 
-
-    def usuario_administrador():
-        print(len(get_usuarios()))
-        if len(get_usuarios()) == 0:
-            adicionar_usuario("admin", "admin", "Gerente")
-            
-
     #-------------------------------Login---------------------------------------
 
     # Função para criar a tela de login
@@ -1110,7 +1103,7 @@ def main(page: ft.Page):
         # Campos de entrada para nome de usuário e senha
         campo_nome_usuario = ft.TextField(
             label="Nome de Usuário",
-            width=400,
+            width=300,
             bgcolor="white",
             color="black",
             border_radius=15,
@@ -1118,32 +1111,25 @@ def main(page: ft.Page):
 
         campo_senha_usuario = ft.TextField(
             label="Senha",
-            width=400,
+            width=300,
             bgcolor="white",
             color="black",
             border_radius=15,
             password=True,  # Oculta o texto digitado
         )
 
-        botoes_login = ft.Row(
-            controls=[
-                 ft.ElevatedButton(
-                    text="Voltar",
-                    bgcolor="red",
-                    color="white",
-                    on_click=lambda e: voltar(),
-                ),
-
-                ft.ElevatedButton(
-                    text="Login",
-                    bgcolor="green",
-                    color="white",
-                    on_click=lambda e: login_usuario(campo_nome_usuario.value, campo_senha_usuario.value),
-                ),
-               
-            ],
-            alignment=ft.MainAxisAlignment.END, 
-            spacing=20,  
+        # Botão para realizar o login
+        botao_login = ft.ElevatedButton(
+            text="Login",
+            bgcolor="green",
+            color="white",
+            on_click=lambda e: login_usuario(campo_nome_usuario.value, campo_senha_usuario.value),
+        )
+        botao_voltar = ft.ElevatedButton(
+            text="Voltar",
+            bgcolor="red",
+            color="white",
+            on_click=lambda e: voltar(),
         )
 
         # Cabeçalho da tela de login
@@ -1158,16 +1144,13 @@ def main(page: ft.Page):
                         border_radius=5,
                     ),
                     ft.Text(
-                        "Restaurante Bom Sabor",
-                        size=14,
+                        "Bem-vindo ao Restaurante Bom Sabor",
+                        size=16,
                         weight=ft.FontWeight.BOLD,
                         color="black",
-                        text_align=ft.TextAlign.CENTER,
                     ),
                 ],
-                
                 alignment=ft.MainAxisAlignment.CENTER,
-                spacing=10,
             ),
             padding=10,
             border_radius=20,
@@ -1185,7 +1168,8 @@ def main(page: ft.Page):
                     cabecalho_login,
                     campo_nome_usuario,
                     campo_senha_usuario,
-                    botoes_login,
+                    botao_login,
+                    botao_voltar,
                 ],
                 alignment=ft.MainAxisAlignment.CENTER,
                 spacing=20,
@@ -1224,7 +1208,6 @@ def main(page: ft.Page):
         else:
             return False
 
-    # Função para verificar a permissão de relatório
     def permissao_relatorio(cargo):
         if cargo == "Gerente":
             return True
@@ -1666,7 +1649,6 @@ def main(page: ft.Page):
     
     atualizar_lista_mesas(layout_principal)
     
-    usuario_administrador()
     
     
     app = App()
@@ -1677,7 +1659,6 @@ def main(page: ft.Page):
     page.overlay.append(bs_pagamento)
     page.overlay.append(bs_adicionar_pedido)
     
-
     
     page.add(ft.Stack([
         fundo, 

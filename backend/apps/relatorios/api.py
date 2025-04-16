@@ -12,14 +12,13 @@ relatorio_router = Router()
 class RelatorioSchema(ModelSchema):
     class Config:
         model = Relatorio
-        model_fields = ['id','nome_usuario', 'numero_mesa', 'tipo_desconto', 'tipo_pagamento', 'desconto', 'valor_total', 'quantidade_pedidos'] 
+        model_fields = [ 'numero_mesa', 'tipo_desconto', 'tipo_pagamento', 'desconto', 'valor_total', 'quantidade_pedidos'] 
     
 
 @relatorio_router.post('/relatorio/', response=RelatorioSchema)
 def post_relatorio(request, relatorio_data: RelatorioSchema):
     
     novo_relatorio = Relatorio(
-        nome_usuario = relatorio_data.nome_usuario,
         numero_mesa = relatorio_data.numero_mesa, 
         tipo_pagamento = relatorio_data.tipo_pagamento,
         tipo_desconto = relatorio_data.tipo_desconto,
@@ -44,7 +43,6 @@ def update_relatorio(request, id: int, relatorio_data: RelatorioSchema):
 
     relatorio = get_object_or_404(Relatorio, pk=id)
 
-    relatorio.nome_usuario = request.nome_usuario
     relatorio.numero_mesa = relatorio_data.numero_mesa
     relatorio.data_hora = relatorio_data.data_hora
     relatorio.tipo_pagamento = relatorio_data.tipo_pagamento
