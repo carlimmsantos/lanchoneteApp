@@ -50,7 +50,7 @@ def atualizar_status_mesa(mesa_id, numero):
         conn = psycopg2.connect(
             dbname="Gerencia",
             user="postgres",
-            password="santos2018", 
+            password="suasenha", 
             host="localhost",
             port="5432"
         )
@@ -91,7 +91,7 @@ def get_mesas_com_pedidos():
         conn = psycopg2.connect(
             dbname="Gerencia",
             user="postgres",
-            password="santos2018",  
+            password="suasenha",  
             host="localhost",
             port="5432"
         )
