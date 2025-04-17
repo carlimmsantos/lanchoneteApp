@@ -563,11 +563,11 @@ def main(page: ft.Page):
 
         desconto_valor = 0.0
 
-        if tipo_desconto != None:
+        if tipo_desconto != None and tipo_desconto != "Nenhum":
             desconto_valor = valor_total
             valor_total = 0.0
         
-        else :
+        else:
             tipo_desconto = "Nenhum"
         
         
@@ -1141,7 +1141,7 @@ def main(page: ft.Page):
      )
 
     page.atual_usuario = "Visitante"
-    page.permissao = "Gerente"
+    page.permissao = "Visitante"
 
     add_list_pagamento = ft.Dropdown(
         width=200,

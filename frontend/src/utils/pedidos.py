@@ -31,7 +31,7 @@ def update_pedido(pedido_id, quantidade, mesa, id_produto):
 
 def get_pedidos_por_mesa(mesa_id):
     try:
-        # Conexão com o banco de dados
+        
         conn = psycopg2.connect(
             dbname="Gerencia",
             user="postgres",
@@ -41,15 +41,15 @@ def get_pedidos_por_mesa(mesa_id):
         )
         cursor = conn.cursor()
 
-        # Chamada da função no banco de dados
+        
         cursor.execute("SELECT * FROM get_pedidos_por_mesa(%s);", (mesa_id,))
         pedidos = cursor.fetchall()
 
-        # Fechar conexão
+        
         cursor.close()
         conn.close()
 
-        # Retornar os pedidos
+        
         return [
             {"pedido_id": row[0], "quantidade": row[1], "produto_nome": row[2]}
             for row in pedidos
@@ -70,7 +70,7 @@ def delete_pedido(pedido_id):
 
 def apagar_pedidos_mesa(mesa_id):
     try:
-        # Conexão com o banco de dados
+        
         conn = psycopg2.connect(
             dbname="Gerencia",
             user="postgres",
@@ -78,23 +78,23 @@ def apagar_pedidos_mesa(mesa_id):
             host="localhost",
             port="5432"
         )
-        # Criação de um cursor para executar comandos SQL
+        
         cursor = conn.cursor()
 
-        # Chamada do procedimento armazenado
+       
         cursor.execute("CALL public.apagar_pedidos_mesa(%s);", (mesa_id,))
 
-        # Confirma a transação
+       
         conn.commit()
 
         print(f"Mesa {mesa_id} fechada com sucesso.")
 
     except Exception as e:
-        # Tratamento de erros
+        
         print(f"Erro ao fechar a mesa {mesa_id}: {e}")
 
     finally:
-        # Fecha o cursor e a conexão
+        
         if 'cursor' in locals():
             cursor.close()
         if 'conn' in locals():

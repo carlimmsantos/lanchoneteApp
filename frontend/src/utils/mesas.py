@@ -63,7 +63,7 @@ def atualizar_status_mesa(mesa_id, numero):
         
 
         
-        novo_status = not resultado  # Se houver pedidos (True), status será False; caso contrário, True
+        novo_status = not resultado  
 
         print(f"[atualizar_status_mesa] Mesa {mesa_id} tem pedidos: {resultado}. Atualizando status para {'Disponível' if novo_status else 'Ocupado'}.")
         response = atualizar_mesa(mesa_id, numero=numero, status=novo_status)
@@ -91,17 +91,17 @@ def get_mesas_com_pedidos():
         conn = psycopg2.connect(
             dbname="Gerencia",
             user="postgres",
-            password="santos2018",  # Substitua pela sua senha
+            password="santos2018",  
             host="localhost",
             port="5432"
         )
         cursor = conn.cursor()
 
-        # Consulta à view
+        
         query = "SELECT mesa_id, mesa_numero, mesa_status, total_pedidos FROM mesas_com_pedidos;"
         cursor.execute(query)
 
-        # Recupera os resultados
+        
         colunas = [desc[0] for desc in cursor.description]
         resultados = [dict(zip(colunas, row)) for row in cursor.fetchall()]
 
@@ -112,7 +112,7 @@ def get_mesas_com_pedidos():
         return []
 
     finally:
-        # Fecha o cursor e a conexão
+        
         if 'cursor' in locals():
             cursor.close()
         if 'conn' in locals():
